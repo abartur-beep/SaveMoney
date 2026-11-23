@@ -7,7 +7,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="ניהול השקעות" />
   <meta name="theme-color" content="#1e3a5f" />
-  <title>ניהול השקעות — גרסה 3.4</title>
+  <title>ניהול השקעות — גרסה 3.5</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -252,8 +252,8 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
         <div class="flex items-center gap-2.5 flex-wrap">
-          <h1 class="text-xl sm:text-2xl font-bold tracking-tight">ניהול השקעות — גרסה 3.4</h1>
-          <span class="px-3 py-0.5 flat-pill text-xs font-semibold bg-[#2b6cb0] text-white">גרסה 3.4</span>
+          <h1 class="text-xl sm:text-2xl font-bold tracking-tight">ניהול השקעות — גרסה 3.5</h1>
+          <span class="px-3 py-0.5 flat-pill text-xs font-semibold bg-[#2b6cb0] text-white">גרסה 3.5</span>
           <button id="cloudStatusPill" type="button" title="הגדרות סנכרון ענן אוטומטי" class="inline-flex items-center gap-1.5 px-3 py-0.5 flat-pill text-xs font-semibold bg-[#162c49] hover:bg-[#235891] text-slate-200 border border-white/15 transition">
             <span id="cloudStatusDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
             <span id="cloudStatusLabel">מקומי בלבד</span>
@@ -2098,7 +2098,7 @@
       ].join(" ");
 
       const summaryTable = tbl([
-        row(tag("td", 'colspan="9" class="banner"', "ניהול השקעות — סיכום תיק ופרטי סוכנים (גרסה 3.4)")),
+        row(tag("td", 'colspan="9" class="banner"', "ניהול השקעות — סיכום תיק ופרטי סוכנים (גרסה 3.5)")),
         row([
           tag("td", 'colspan="2" class="hdr2"', 'סה"כ צבירה נוכחית'),
           cell(fmtNum(latestTotal), "font-weight:bold;"),
@@ -2158,7 +2158,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "ניהול_השקעות_v3.4.xls";
+      a.download = "ניהול_השקעות_v3.5.xls";
       a.click();
       URL.revokeObjectURL(url);
       showToast("קובץ אקסל מעוצב עם כל הנתונים יוצא בהצלחה!");
@@ -2392,7 +2392,7 @@
       const eventLines = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
-        "PRODID:-//Personal Investment Tracker//v3.4//HE",
+        "PRODID:-//Personal Investment Tracker//v3.5//HE",
         "BEGIN:VEVENT",
         `UID:savings-reminder-${dateStr}-${pad(hh)}${pad(mm)}-${Date.now()}@investments.local`,
         `DTSTAMP:${dtStamp}`,
@@ -2632,8 +2632,10 @@
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const timeStr = new Date(now).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
         updateCloudBadge("synced", timeStr);
+        if (force) showToast("הנתונים נשמרו ונשלחו לענן בהצלחה!");
       } catch (err) {
         updateCloudBadge("error", err.message || "");
+        if (force) showToast("שגיאה בשליחת הנתונים לענן");
       }
     }
 
@@ -2644,7 +2646,7 @@
       cloudPushTimer = setTimeout(() => { pushToCloud(); }, 900);
     }
 
-    async function pullFromCloud(silent = true) {
+    async function pullFromCloud(silent = true, forceOverwriteLocal = false) {
       const endpoint = getCloudEndpoint();
       if (!endpoint) {
         updateCloudBadge("unconfigured");
@@ -2660,7 +2662,7 @@
           return;
         }
         const localTs = getLocalUpdatedAt();
-        if (Number(remote.updatedAt) > localTs) {
+        if (forceOverwriteLocal || Number(remote.updatedAt) > localTs) {
           isPullingFromCloud = true;
           try {
             if (Array.isArray(remote.funds) && remote.funds.length > 0) {
@@ -2729,7 +2731,17 @@
       if (!/^https?:\/\//i.test(dbUrl)) dbUrl = "https://" + dbUrl;
       saveCloudConfig({ dbUrl, syncKey });
       cloudModal.classList.add("hidden");
-      await pullFromCloud(false);
+      await pushToCloud(true);
+    });
+
+    document.getElementById("btnPullCloudNow").addEventListener("click", async () => {
+      let dbUrl = document.getElementById("cloudDbUrlInput").value.trim().replace(/\/+$/, "");
+      const syncKey = document.getElementById("cloudSyncKeyInput").value.trim();
+      if (dbUrl && syncKey) {
+        if (!/^https?:\/\//i.test(dbUrl)) dbUrl = "https://" + dbUrl;
+        saveCloudConfig({ dbUrl, syncKey });
+      }
+      await pullFromCloud(false, true);
     });
 
     document.getElementById("btnPullCloudNow").addEventListener("click", async () => {
