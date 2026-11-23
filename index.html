@@ -7,7 +7,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="ניהול השקעות" />
   <meta name="theme-color" content="#1e3a5f" />
-  <title>ניהול השקעות — גרסה 3.6</title>
+  <title>ניהול השקעות — גרסה 3.8</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -252,8 +252,8 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
         <div class="flex items-center gap-2.5 flex-wrap">
-          <h1 class="text-xl sm:text-2xl font-bold tracking-tight">ניהול השקעות — גרסה 3.6</h1>
-          <span class="px-3 py-0.5 flat-pill text-xs font-semibold bg-[#2b6cb0] text-white">גרסה 3.6</span>
+          <h1 class="text-xl sm:text-2xl font-bold tracking-tight">ניהול השקעות — גרסה 3.8</h1>
+          <span class="px-3 py-0.5 flat-pill text-xs font-semibold bg-[#2b6cb0] text-white">גרסה 3.8</span>
           <button id="cloudStatusPill" type="button" title="הגדרות סנכרון ענן אוטומטי" class="inline-flex items-center gap-1.5 px-3 py-0.5 flat-pill text-xs font-semibold bg-[#162c49] hover:bg-[#235891] text-slate-200 border border-white/15 transition">
             <span id="cloudStatusDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
             <span id="cloudStatusLabel">מקומי בלבד</span>
@@ -2562,6 +2562,9 @@
         const raw = localStorage.getItem(CLOUD_CONFIG_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
+          if (parsed && parsed.disabled) {
+            return { dbUrl: "", syncKey: "" };
+          }
           if (parsed && parsed.dbUrl && parsed.syncKey) {
             return {
               dbUrl: String(parsed.dbUrl).trim().replace(/\/+$/, ""),
@@ -2575,6 +2578,12 @@
 
     function saveCloudConfig(cfg) {
       try { localStorage.setItem(CLOUD_CONFIG_KEY, JSON.stringify(cfg)); } catch (e) {}
+    }
+
+    function hasLocalUserEdits() {
+      try {
+        return localStorage.getItem(CLOUD_META_KEY) !== null;
+      } catch (e) { return false; }
     }
 
     function getLocalUpdatedAt() {
@@ -2671,11 +2680,15 @@
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const remote = await res.json();
         if (!remote || typeof remote !== "object" || !remote.updatedAt) {
-          await pushToCloud(true);
+          if (hasLocalUserEdits()) {
+            await pushToCloud(true);
+          } else {
+            updateCloudBadge("synced", "ממתין לנתונים");
+          }
           return;
         }
         const localTs = getLocalUpdatedAt();
-        if (forceOverwriteLocal || Number(remote.updatedAt) > localTs) {
+        if (forceOverwriteLocal || !hasLocalUserEdits() || Number(remote.updatedAt) > localTs) {
           isPullingFromCloud = true;
           try {
             if (Array.isArray(remote.funds) && remote.funds.length > 0) {
@@ -2711,7 +2724,7 @@
             isPullingFromCloud = false;
           }
           if (!silent) showToast("הנתונים עודכנו מהענן!");
-        } else if (localTs > Number(remote.updatedAt)) {
+        } else if (hasLocalUserEdits() && localTs > Number(remote.updatedAt)) {
           await pushToCloud(true);
         } else if (!silent) {
           showToast("הנתונים כבר מעודכנים מול הענן");
@@ -2761,7 +2774,7 @@
     });
 
     document.getElementById("btnDisconnectCloud").addEventListener("click", () => {
-      saveCloudConfig({ dbUrl: "", syncKey: "" });
+      saveCloudConfig({ disabled: true, dbUrl: "", syncKey: "" });
       document.getElementById("cloudDbUrlInput").value = "";
       document.getElementById("cloudSyncKeyInput").value = "";
       updateCloudBadge("unconfigured");
@@ -2769,6 +2782,16 @@
       showToast("סנכרון הענן נותק — הנתונים נשמרים מקומית");
     });
 
+    window.addEventListener("pageshow", () => {
+      if (getCloudEndpoint()) {
+        pullFromCloud(true);
+      }
+    });
+    window.addEventListener("focus", () => {
+      if (getCloudEndpoint()) {
+        pullFromCloud(true);
+      }
+    });
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden && getCloudEndpoint()) {
         pullFromCloud(true);
@@ -2778,17 +2801,7 @@
       if (!document.hidden && getCloudEndpoint()) {
         pullFromCloud(true);
       }
-    }, 15000);
-
-    // Close modals on backdrop click or Escape key + Undo/Redo keyboard shortcuts
-    document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
-      backdrop.addEventListener("click", (e) => {
-        if (e.target === backdrop) backdrop.classList.add("hidden");
-      });
-    });
-    document.addEventListener("keydown", (e) => {
-      if ((e.ctrlKey || e.metaKey) && !e.altKey) {
-        const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+    }, 10000);
         const isTextInput = tag === "input" || tag === "textarea" || tag === "select";
         if (e.key.toLowerCase() === "z" && !e.shiftKey && !isTextInput) {
           e.preventDefault();
@@ -2813,14 +2826,20 @@
     // Init
     if (window.lucide) lucide.createIcons();
     applyTheme(isDarkTheme, false);
-    renderAgents();
-    renderAll();
     updateHistoryButtons();
-    if (getCloudEndpoint()) {
-      pullFromCloud(true);
-    } else {
-      updateCloudBadge("unconfigured");
-    }
+
+    (async function bootApp() {
+      if (getCloudEndpoint()) {
+        updateCloudBadge("syncing");
+        const label = document.getElementById("cloudStatusLabel");
+        if (label) label.textContent = "טוען נתונים מהענן...";
+        await pullFromCloud(true, false);
+      } else {
+        updateCloudBadge("unconfigured");
+      }
+      renderAgents();
+      renderAll();
+    })();
   </script>
 </body>
 </html>
