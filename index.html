@@ -7,7 +7,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="ניהול השקעות" />
   <meta name="theme-color" content="#1e3a5f" />
-  <title>ניהול השקעות — גרסה 3.5</title>
+  <title>ניהול השקעות — גרסה 3.6</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -252,8 +252,8 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
         <div class="flex items-center gap-2.5 flex-wrap">
-          <h1 class="text-xl sm:text-2xl font-bold tracking-tight">ניהול השקעות — גרסה 3.5</h1>
-          <span class="px-3 py-0.5 flat-pill text-xs font-semibold bg-[#2b6cb0] text-white">גרסה 3.5</span>
+          <h1 class="text-xl sm:text-2xl font-bold tracking-tight">ניהול השקעות — גרסה 3.6</h1>
+          <span class="px-3 py-0.5 flat-pill text-xs font-semibold bg-[#2b6cb0] text-white">גרסה 3.6</span>
           <button id="cloudStatusPill" type="button" title="הגדרות סנכרון ענן אוטומטי" class="inline-flex items-center gap-1.5 px-3 py-0.5 flat-pill text-xs font-semibold bg-[#162c49] hover:bg-[#235891] text-slate-200 border border-white/15 transition">
             <span id="cloudStatusDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
             <span id="cloudStatusLabel">מקומי בלבד</span>
@@ -852,7 +852,12 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed.map(r => ({
+              ...r,
+              values: (r && r.values && typeof r.values === "object") ? r.values : {}
+            }));
+          }
         }
       } catch (e) {}
       return buildDefaultRows();
@@ -1119,6 +1124,7 @@
 
       for (let i = 0; i < state.rows.length; i++) {
         const row = state.rows[i];
+        if (!row.values || typeof row.values !== "object") row.values = {};
         const hasAny = state.funds.some(f => typeof row.values[f.id] === "number" && !Number.isNaN(row.values[f.id]));
         const total = hasAny ? state.funds.reduce((sum, f) => sum + (Number(row.values[f.id]) || 0), 0) : null;
         if (baseTotal === null && total !== null) baseTotal = total;
@@ -1191,9 +1197,9 @@
       let initSum = 0;
 
       state.funds.forEach(f => {
-        const firstPopRow = computed.find(r => typeof r.values[f.id] === "number" && !Number.isNaN(r.values[f.id]));
+        const firstPopRow = computed.find(r => r.values && typeof r.values[f.id] === "number" && !Number.isNaN(r.values[f.id]));
         const initVal = firstPopRow ? Number(firstPopRow.values[f.id]) : (Number(f.initial) || 0);
-        const curr = Number(latest.values[f.id]) || 0;
+        const curr = (latest && latest.values) ? (Number(latest.values[f.id]) || 0) : 0;
         const diff = curr - initVal;
         const share = latestTotal > 0 ? (curr / latestTotal) : 0;
         initSum += initVal;
@@ -1249,7 +1255,8 @@
     function getDefaultQuickEntryTarget() {
       let lastPopIdx = -1;
       state.rows.forEach((row, idx) => {
-        const hasAny = state.funds.some(f => typeof row.values[f.id] === "number" && !Number.isNaN(row.values[f.id]));
+        const vals = (row && row.values && typeof row.values === "object") ? row.values : {};
+        const hasAny = state.funds.some(f => typeof vals[f.id] === "number" && !Number.isNaN(vals[f.id]));
         if (hasAny) lastPopIdx = idx;
       });
       if (lastPopIdx >= 0 && lastPopIdx + 1 < state.rows.length) {
@@ -1297,9 +1304,10 @@
       yearSel.innerHTML = yearOpts.join("");
 
       const existingRow = state.rows.find(r => r.year === state.qeSelectedYear && r.monthIndex === state.qeSelectedMonth);
+      const existingVals = (existingRow && existingRow.values && typeof existingRow.values === "object") ? existingRow.values : {};
 
       grid.innerHTML = state.funds.map(f => {
-        const v = existingRow ? existingRow.values[f.id] : null;
+        const v = existingVals[f.id];
         const displayVal = (typeof v === "number" && !Number.isNaN(v)) ? formatCommaInt(v) : "";
         return `
           <div class="flat-tonal-card px-3 py-2">
@@ -1380,6 +1388,7 @@
       const tbody = document.getElementById("monthlyTableBody");
       let html = "";
       indexed.forEach(({ row, origIdx }) => {
+        if (!row.values || typeof row.values !== "object") row.values = {};
         html += `<tr class="hover:bg-slate-50">
           <td class="px-3 py-2.5 font-semibold text-slate-700 bg-slate-50 sticky-col-year tabular-nums whitespace-nowrap">${row.year}</td>
           <td class="px-3 py-2.5 font-semibold text-slate-700 bg-slate-50 sticky-col-month whitespace-nowrap">${escHtml(row.monthName)}</td>`;
@@ -2674,7 +2683,10 @@
               localStorage.setItem(FUNDS_STORAGE_KEY, JSON.stringify(state.funds));
             }
             if (Array.isArray(remote.rows) && remote.rows.length > 0) {
-              state.rows = remote.rows;
+              state.rows = remote.rows.map(r => ({
+                ...r,
+                values: (r && r.values && typeof r.values === "object") ? r.values : {}
+              }));
               localStorage.setItem(STORAGE_KEY, JSON.stringify(state.rows));
             }
             if (remote.tracks && typeof remote.tracks === "object") {
