@@ -7,7 +7,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="ניהול השקעות" />
   <meta name="theme-color" content="#1e3a5f" />
-  <title>ניהול השקעות — גרסה 3.2</title>
+  <title>ניהול השקעות — גרסה 3.4</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -233,7 +233,7 @@
         color: #0f172a !important;
         border-color: #cbd5e1 !important;
       }
-      header button, nav, #resetModal, #calendarModal, #manageFundsModal, #toast, #btnAddMonth, #btnOpenManageFunds, #btnAddAgent, #quickEntryCard, #monthlyControlsBar {
+      header button, nav, #resetModal, #calendarModal, #manageFundsModal, #cloudSyncModal, #toast, #btnAddMonth, #btnOpenManageFunds, #btnAddAgent, #quickEntryCard, #monthlyControlsBar, #cloudStatusPill {
         display: none !important;
       }
       header {
@@ -252,8 +252,12 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
         <div class="flex items-center gap-2.5 flex-wrap">
-          <h1 class="text-xl sm:text-2xl font-bold tracking-tight">ניהול השקעות — גרסה 3.2</h1>
-          <span class="px-3 py-0.5 flat-pill text-xs font-semibold bg-[#2b6cb0] text-white">גרסה 3.2</span>
+          <h1 class="text-xl sm:text-2xl font-bold tracking-tight">ניהול השקעות — גרסה 3.4</h1>
+          <span class="px-3 py-0.5 flat-pill text-xs font-semibold bg-[#2b6cb0] text-white">גרסה 3.4</span>
+          <button id="cloudStatusPill" type="button" title="הגדרות סנכרון ענן אוטומטי" class="inline-flex items-center gap-1.5 px-3 py-0.5 flat-pill text-xs font-semibold bg-[#162c49] hover:bg-[#235891] text-slate-200 border border-white/15 transition">
+            <span id="cloudStatusDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+            <span id="cloudStatusLabel">מקומי בלבד</span>
+          </button>
         </div>
         <p class="text-sm text-slate-200 mt-0.5">מעקב חודשי, חישוב רווח והפסד אוטומטי ודשבורד אינטראקטיבי</p>
       </div>
@@ -273,35 +277,39 @@
           <span>תפריט אפשרויות</span>
           <i data-lucide="chevron-down" class="w-4 h-4"></i>
         </button>
-        <div id="mainMenuDropdown" class="hidden absolute left-0 top-full mt-2 w-60 max-w-[calc(100vw-2rem)] rounded-2xl bg-white text-slate-800 border-2 border-slate-200 py-2 z-50">
-          <button id="btnThemeToggle" type="button" class="w-full px-4 py-2.5 text-right text-sm font-semibold hover:bg-slate-100 flex items-center gap-2.5 transition">
-            <i id="themeIconMoon" data-lucide="moon" class="w-4 h-4 text-[#1e3a5f] shrink-0"></i>
+        <div id="mainMenuDropdown" class="hidden absolute left-0 top-full mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-3xl bg-white text-slate-800 border border-slate-200 p-2 z-50">
+          <button id="btnCloudSyncMenu" type="button" class="w-full px-3.5 py-2.5 rounded-2xl text-right text-sm font-semibold hover:bg-slate-100 flex items-center gap-2.5 transition">
+            <i data-lucide="cloud" class="w-4 h-4 text-[#2b6cb0] shrink-0"></i>
+            <span>סנכרון ענן אוטומטי</span>
+          </button>
+          <button id="btnThemeToggle" type="button" class="w-full px-3.5 py-2.5 rounded-2xl text-right text-sm font-semibold hover:bg-slate-100 flex items-center gap-2.5 transition">
+            <i id="themeIconMoon" data-lucide="moon" class="w-4 h-4 text-slate-600 shrink-0"></i>
             <i id="themeIconSun" data-lucide="sun" class="w-4 h-4 text-amber-500 shrink-0 hidden"></i>
             <span id="themeToggleText">מצב כהה</span>
           </button>
-          <button id="btnCalendarIcs" type="button" class="w-full px-4 py-2.5 text-right text-sm font-semibold hover:bg-slate-100 flex items-center gap-2.5 transition">
-            <i data-lucide="calendar-plus" class="w-4 h-4 text-[#2b6cb0] shrink-0"></i>
+          <button id="btnCalendarIcs" type="button" class="w-full px-3.5 py-2.5 rounded-2xl text-right text-sm font-semibold hover:bg-slate-100 flex items-center gap-2.5 transition">
+            <i data-lucide="calendar-plus" class="w-4 h-4 text-indigo-600 shrink-0"></i>
             <span>תזכורת יומן (.ics)</span>
           </button>
-          <button id="btnPrintPdf" type="button" class="w-full px-4 py-2.5 text-right text-sm font-semibold hover:bg-slate-100 flex items-center gap-2.5 transition">
+          <button id="btnPrintPdf" type="button" class="w-full px-3.5 py-2.5 rounded-2xl text-right text-sm font-semibold hover:bg-slate-100 flex items-center gap-2.5 transition">
             <i data-lucide="printer" class="w-4 h-4 text-amber-600 shrink-0"></i>
             <span>הדפסה / PDF</span>
           </button>
           <div class="my-1.5 border-t border-slate-200"></div>
-          <button id="btnBackupJson" type="button" class="w-full px-4 py-2.5 text-right text-sm font-semibold hover:bg-slate-100 flex items-center gap-2.5 transition">
+          <button id="btnBackupJson" type="button" class="w-full px-3.5 py-2.5 rounded-2xl text-right text-sm font-semibold hover:bg-slate-100 flex items-center gap-2.5 transition">
             <i data-lucide="save" class="w-4 h-4 text-[#2b6cb0] shrink-0"></i>
             <span>שמור גיבוי (JSON)</span>
           </button>
-          <button id="btnRestoreJson" type="button" class="w-full px-4 py-2.5 text-right text-sm font-semibold hover:bg-slate-100 flex items-center gap-2.5 transition">
+          <button id="btnRestoreJson" type="button" class="w-full px-3.5 py-2.5 rounded-2xl text-right text-sm font-semibold hover:bg-slate-100 flex items-center gap-2.5 transition">
             <i data-lucide="upload" class="w-4 h-4 text-slate-600 shrink-0"></i>
             <span>טען גיבוי (JSON)</span>
           </button>
-          <button id="btnExportCsv" type="button" class="w-full px-4 py-2.5 text-right text-sm font-semibold hover:bg-slate-100 flex items-center gap-2.5 transition">
+          <button id="btnExportCsv" type="button" class="w-full px-3.5 py-2.5 rounded-2xl text-right text-sm font-semibold hover:bg-slate-100 flex items-center gap-2.5 transition">
             <i data-lucide="download" class="w-4 h-4 text-emerald-600 shrink-0"></i>
             <span>ייצוא לאקסל</span>
           </button>
           <div class="my-1.5 border-t border-slate-200"></div>
-          <button id="btnResetModal" type="button" class="w-full px-4 py-2.5 text-right text-sm font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2.5 transition">
+          <button id="btnResetModal" type="button" class="w-full px-3.5 py-2.5 rounded-2xl text-right text-sm font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2.5 transition">
             <i data-lucide="rotate-ccw" class="w-4 h-4 shrink-0"></i>
             <span>איפוס נתונים</span>
           </button>
@@ -313,46 +321,46 @@
 
   <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
-    <!-- Flat Tonal KPI Cards -->
+    <!-- KPI Cards (Android 14 Tonal Flat Containers) -->
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="flat-card p-5">
         <div class="flex items-center justify-between">
           <span class="text-sm font-semibold text-slate-500">סה"כ צבירה נוכחית</span>
-          <span class="p-2.5 flat-pill bg-blue-50 text-[#1e3a5f]"><i data-lucide="wallet" class="w-5 h-5"></i></span>
+          <span class="p-2.5 rounded-2xl bg-blue-50 text-[#1e3a5f]"><i data-lucide="wallet" class="w-5 h-5"></i></span>
         </div>
-        <div id="kpiTotal" class="text-2xl font-bold text-[#1e3a5f] mt-2.5">2,270,334 ₪</div>
+        <div id="kpiTotal" class="text-2xl font-bold text-[#1e3a5f] mt-3 tabular-nums">2,270,334 ₪</div>
         <div id="kpiLatestMonth" class="text-xs text-slate-500 mt-1">נכון לאוקטובר 2026</div>
       </div>
 
       <div class="flat-card p-5">
         <div class="flex items-center justify-between">
           <span class="text-sm font-semibold text-slate-500">רווח / הפסד חודש אחרון</span>
-          <span class="p-2.5 flat-pill bg-emerald-50 text-emerald-700"><i data-lucide="trending-up" class="w-5 h-5"></i></span>
+          <span class="p-2.5 rounded-2xl bg-emerald-50 text-emerald-700"><i data-lucide="trending-up" class="w-5 h-5"></i></span>
         </div>
-        <div id="kpiMomDiff" class="text-2xl font-bold text-slate-700 mt-2.5">0 ₪</div>
+        <div id="kpiMomDiff" class="text-2xl font-bold text-slate-700 mt-3 tabular-nums">0 ₪</div>
         <div class="text-xs text-slate-500 mt-1">לעומת חודש קודם</div>
       </div>
 
       <div class="flat-card p-5">
         <div class="flex items-center justify-between">
           <span class="text-sm font-semibold text-slate-500">שינוי חודש אחרון (%)</span>
-          <span class="p-2.5 flat-pill bg-indigo-50 text-indigo-700"><i data-lucide="percent" class="w-5 h-5"></i></span>
+          <span class="p-2.5 rounded-2xl bg-indigo-50 text-indigo-700"><i data-lucide="percent" class="w-5 h-5"></i></span>
         </div>
-        <div id="kpiMomPct" class="text-2xl font-bold text-slate-700 mt-2.5">0.00%</div>
+        <div id="kpiMomPct" class="text-2xl font-bold text-slate-700 mt-3 tabular-nums">0.00%</div>
         <div class="text-xs text-slate-500 mt-1">תשואה חודשית כוללת</div>
       </div>
 
       <div class="flat-card p-5">
         <div class="flex items-center justify-between">
           <span class="text-sm font-semibold text-slate-500">רווח / הפסד מצטבר</span>
-          <span class="p-2.5 flat-pill bg-amber-50 text-amber-700"><i data-lucide="bar-chart-3" class="w-5 h-5"></i></span>
+          <span class="p-2.5 rounded-2xl bg-amber-50 text-amber-700"><i data-lucide="bar-chart-3" class="w-5 h-5"></i></span>
         </div>
-        <div id="kpiCumDiff" class="text-2xl font-bold text-slate-700 mt-2.5">0 ₪</div>
+        <div id="kpiCumDiff" class="text-2xl font-bold text-slate-700 mt-3 tabular-nums">0 ₪</div>
         <div class="text-xs text-slate-500 mt-1">מתחילת המעקב (פבר׳ 2026)</div>
       </div>
     </section>
 
-    <!-- Android 14 Pill Navigation Bar -->
+    <!-- Material 3 Pill Navigation Tabs -->
     <nav class="flex flex-wrap gap-2" aria-label="תצוגות">
       <button id="tabBtnDash" type="button" class="tab-active px-5 py-2.5 flat-pill text-sm font-semibold transition inline-flex items-center gap-2">
         <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
@@ -372,7 +380,7 @@
     <section id="viewDash" class="space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Interactive P&L Chart (2 cols wide) -->
-        <div class="lg:col-span-2 flat-card p-5">
+        <div class="lg:col-span-2 flat-card p-5 sm:p-6">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
             <div>
               <h2 class="text-lg font-bold text-[#1e3a5f]">גרף רווח / הפסד אינטראקטיבי</h2>
@@ -385,10 +393,10 @@
                 <button id="chartModeTotal" type="button" class="px-3 py-1.5 flat-pill text-xs font-semibold text-slate-600 hover:text-slate-900 transition">שווי תיק כולל</button>
               </div>
               <div class="inline-flex flex-wrap flat-pill bg-slate-100 p-1 gap-1 border border-slate-200">
-                <button id="tf1m" type="button" class="px-2.5 py-1.5 flat-pill text-xs font-semibold text-slate-600 hover:text-slate-900 transition">חודש</button>
-                <button id="tf3m" type="button" class="px-2.5 py-1.5 flat-pill text-xs font-semibold text-slate-600 hover:text-slate-900 transition">3 חודשים</button>
-                <button id="tf6m" type="button" class="px-2.5 py-1.5 flat-pill text-xs font-semibold text-slate-600 hover:text-slate-900 transition">חצי שנה</button>
-                <button id="tf5y" type="button" class="px-2.5 py-1.5 flat-pill text-xs font-semibold text-slate-600 hover:text-slate-900 transition">5 שנים</button>
+                <button id="tf1m" type="button" class="px-3 py-1.5 flat-pill text-xs font-semibold text-slate-600 hover:text-slate-900 transition">חודש</button>
+                <button id="tf3m" type="button" class="px-3 py-1.5 flat-pill text-xs font-semibold text-slate-600 hover:text-slate-900 transition">3 חודשים</button>
+                <button id="tf6m" type="button" class="px-3 py-1.5 flat-pill text-xs font-semibold text-slate-600 hover:text-slate-900 transition">חצי שנה</button>
+                <button id="tf5y" type="button" class="px-3 py-1.5 flat-pill text-xs font-semibold text-slate-600 hover:text-slate-900 transition">5 שנים</button>
                 <button id="tfAll" type="button" class="px-3 py-1.5 flat-pill text-xs font-semibold bg-[#2b6cb0] text-white transition">הכול</button>
               </div>
             </div>
@@ -399,7 +407,7 @@
         </div>
 
         <!-- Allocation Doughnut Chart -->
-        <div class="flat-card p-5">
+        <div class="flat-card p-5 sm:p-6">
           <h2 class="text-lg font-bold text-[#1e3a5f] mb-1">התפלגות התיק לפי קופה</h2>
           <p class="text-xs text-slate-500 mb-4">חלוקה עדכנית באחוזים ובשקלים</p>
           <div class="relative h-64 sm:h-72 w-full">
@@ -408,7 +416,7 @@
         </div>
       </div>
 
-      <!-- Summary Table by Fund -->
+      <!-- Summary Table by Fund (Placed right after P&L Chart) -->
       <div class="flat-card overflow-hidden">
         <div class="px-5 py-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
@@ -424,15 +432,15 @@
           <table class="w-full text-sm text-right">
             <thead class="bg-[#1e3a5f] text-white">
               <tr>
-                <th class="px-4 py-3 font-semibold">שם הקופה</th>
-                <th class="px-4 py-3 font-semibold">גוף מנהל</th>
-                <th class="px-4 py-3 font-semibold">מסלול השקעה</th>
-                <th class="px-4 py-3 font-semibold">דמי ניהול מצבירה</th>
-                <th class="px-4 py-3 font-semibold">דמי ניהול מהפקדה</th>
-                <th class="px-4 py-3 font-semibold">יתרה התחלתית</th>
-                <th class="px-4 py-3 font-semibold">יתרה עדכנית</th>
-                <th class="px-4 py-3 font-semibold">שינוי מצטבר (₪)</th>
-                <th class="px-4 py-3 font-semibold">חלק מהתיק</th>
+                <th class="px-4 py-3.5 font-semibold">שם הקופה</th>
+                <th class="px-4 py-3.5 font-semibold">גוף מנהל</th>
+                <th class="px-4 py-3.5 font-semibold">מסלול השקעה</th>
+                <th class="px-4 py-3.5 font-semibold">דמי ניהול מצבירה</th>
+                <th class="px-4 py-3.5 font-semibold">דמי ניהול מהפקדה</th>
+                <th class="px-4 py-3.5 font-semibold">יתרה התחלתית</th>
+                <th class="px-4 py-3.5 font-semibold">יתרה עדכנית</th>
+                <th class="px-4 py-3.5 font-semibold">שינוי מצטבר (₪)</th>
+                <th class="px-4 py-3.5 font-semibold">חלק מהתיק</th>
               </tr>
             </thead>
             <tbody id="dashSummaryBody" class="divide-y divide-slate-200"></tbody>
@@ -443,10 +451,10 @@
       <!-- Financial Goal & Provider Breakdown Row -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Financial Goal Card -->
-        <div class="lg:col-span-2 flat-card p-5 flex flex-col justify-between">
+        <div class="lg:col-span-2 flat-card p-5 sm:p-6 flex flex-col justify-between">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-            <div class="flex items-center gap-2.5">
-              <span class="p-2.5 flat-pill bg-amber-50 text-amber-700"><i data-lucide="target" class="w-5 h-5"></i></span>
+            <div class="flex items-center gap-3">
+              <span class="p-2.5 rounded-2xl bg-amber-50 text-amber-700"><i data-lucide="target" class="w-5 h-5"></i></span>
               <div>
                 <h2 class="text-lg font-bold text-[#1e3a5f]">מעקב יעד פיננסי וצמיחה עתידית</h2>
                 <p class="text-xs text-slate-500">הגדר יעד צבירה אישי וראה את ההתקדמות והתחזית</p>
@@ -456,7 +464,7 @@
               <label for="goalAmountInput" class="text-xs font-semibold text-slate-600 whitespace-nowrap">סכום יעד (₪):</label>
               <div class="relative">
                 <input id="goalAmountInput" type="text" inputmode="numeric" value="3,000,000"
-                  class="flat-input w-36 pl-7 pr-3 py-1.5 text-sm font-bold text-right" dir="ltr" />
+                  class="flat-input w-40 pl-7 pr-3 py-1.5 text-sm font-bold text-right tabular-nums" dir="ltr" />
                 <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">₪</span>
               </div>
             </div>
@@ -464,18 +472,18 @@
 
           <div class="space-y-3">
             <div class="flex items-center justify-between text-sm">
-              <span class="font-bold text-slate-700">התקדמות ליעד: <span id="goalPctText" class="text-[#1e3a5f]">75.7%</span></span>
+              <span class="font-semibold text-slate-700">התקדמות ליעד: <span id="goalPctText" class="text-[#1e3a5f] font-bold">75.7%</span></span>
               <span id="goalRemainingText" class="text-slate-600">נותרו 729,666 ₪ ליעד</span>
             </div>
-            <div class="w-full h-4 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-              <div id="goalProgressBar" class="h-full bg-gradient-to-l from-[#1e3a5f] to-[#2b6cb0] transition-all duration-300" style="width: 75.7%;"></div>
+            <div class="w-full h-3.5 bg-slate-100 flat-pill overflow-hidden border border-slate-200">
+              <div id="goalProgressBar" class="h-full bg-[#2b6cb0] flat-pill transition-all duration-300" style="width: 75.7%;"></div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              <div class="flat-tonal-card p-3">
+              <div class="flat-tonal-card p-3.5">
                 <div class="text-xs text-slate-500 font-semibold">קצב צמיחה חודשי ממוצע</div>
-                <div id="goalAvgGrowth" class="text-base font-bold text-[#1e3a5f] mt-1">ממתין לחודש נוסף</div>
+                <div id="goalAvgGrowth" class="text-base font-bold text-[#1e3a5f] mt-1 tabular-nums">ממתין לחודש נוסף</div>
               </div>
-              <div class="flat-tonal-card p-3">
+              <div class="flat-tonal-card p-3.5">
                 <div class="text-xs text-slate-500 font-semibold">זמן משוער להגעה ליעד</div>
                 <div id="goalEtaText" class="text-base font-bold text-[#1e3a5f] mt-1">הזן נתוני חודש נוסף לחישוב</div>
               </div>
@@ -484,7 +492,7 @@
         </div>
 
         <!-- Provider Breakdown Chart -->
-        <div class="flat-card p-5">
+        <div class="flat-card p-5 sm:p-6">
           <h2 class="text-lg font-bold text-[#1e3a5f] mb-1">חלוקה לפי גוף מנהל</h2>
           <p class="text-xs text-slate-500 mb-3">פיזור הכספים בין בתי ההשקעות וחברות הביטוח</p>
           <div class="relative h-52 w-full">
@@ -494,53 +502,53 @@
       </div>
 
       <!-- Agents Details Cards (Dynamic) -->
-      <div class="flat-card p-5">
+      <div class="flat-card p-5 sm:p-6">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-          <div class="flex items-center gap-2.5">
-            <span class="p-2.5 flat-pill bg-blue-50 text-[#1e3a5f]"><i data-lucide="users" class="w-5 h-5"></i></span>
+          <div class="flex items-center gap-3">
+            <span class="p-2.5 rounded-2xl bg-blue-50 text-[#1e3a5f]"><i data-lucide="users" class="w-5 h-5"></i></span>
             <div>
               <h2 class="text-lg font-bold text-[#1e3a5f]">פרטי סוכנים ואנשי קשר</h2>
               <p class="text-xs text-slate-500">נהל את כל הסוכנים ואנשי הקשר שלך עם חיוג ווואטסאפ ישיר (נשמר אוטומטית בדפדפן)</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <span id="agentSavedBadge" class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 flat-pill hidden">נשמר</span>
+            <span id="agentSavedBadge" class="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 flat-pill hidden">נשמר</span>
             <button id="btnAddAgent" type="button" class="inline-flex items-center gap-1.5 px-4 py-2 flat-pill text-xs font-semibold bg-[#2b6cb0] hover:bg-[#1e3a5f] text-white transition">
               <i data-lucide="user-plus" class="w-4 h-4"></i>
               <span>הוסף סוכן נוסף</span>
             </button>
           </div>
         </div>
-        <div id="agentsGrid" class="grid grid-cols-1 lg:grid-cols-3 gap-4"></div>
+        <div id="agentsGrid" class="grid grid-cols-1 lg:grid-cols-3 gap-5"></div>
       </div>
     </section>
 
     <!-- TAB 2: Monthly Manual Entry -->
     <section id="viewMonthly" class="hidden space-y-4">
       <!-- Compact Quick Entry Card -->
-      <div id="quickEntryCard" class="flat-card p-4 space-y-3">
+      <div id="quickEntryCard" class="flat-card p-4 sm:p-5 space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-200">
-          <div class="flex items-center gap-2">
-            <span class="p-1.5 flat-pill bg-blue-50 text-[#1e3a5f]"><i data-lucide="zap" class="w-4 h-4"></i></span>
+          <div class="flex items-center gap-2.5">
+            <span class="p-2 rounded-2xl bg-blue-50 text-[#1e3a5f]"><i data-lucide="zap" class="w-4 h-4"></i></span>
             <h2 class="text-sm sm:text-base font-bold text-[#1e3a5f]">הזנה מהירה לחודש</h2>
             <span class="hidden md:inline text-xs text-slate-500">— בחר חודש ושנה ועדכן יתרות</span>
           </div>
-          <div class="flex items-center gap-1.5">
-            <select id="qeMonth" aria-label="בחר חודש" class="px-3 py-1.5 flat-pill border border-slate-300 bg-white text-xs font-semibold text-slate-800 outline-none focus:border-[#1e3a5f]"></select>
-            <select id="qeYear" aria-label="בחר שנה" class="px-3 py-1.5 flat-pill border border-slate-300 bg-white text-xs font-semibold text-slate-800 outline-none focus:border-[#1e3a5f]"></select>
+          <div class="flex items-center gap-2">
+            <select id="qeMonth" aria-label="בחר חודש" class="flat-input px-3 py-1.5 text-xs font-semibold text-slate-800"></select>
+            <select id="qeYear" aria-label="בחר שנה" class="flat-input px-3 py-1.5 text-xs font-semibold text-slate-800"></select>
           </div>
         </div>
 
         <div id="qeFundsGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5"></div>
 
-        <div class="flex flex-col sm:flex-row sm:items-center gap-2 pt-0.5">
-          <input id="qeNote" type="text" aria-label="הערה לחודש" placeholder="הערה לחודש (אופציונלי — הפקדה, מסלקה...)" class="flat-input flex-1 px-3 py-1.5 text-xs" />
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2.5 pt-1">
+          <input id="qeNote" type="text" aria-label="הערה לחודש" placeholder="הערה לחודש (אופציונלי — הפקדה, מסלקה...)" class="flat-input flex-1 px-3 py-2 text-xs" />
           <div class="flex items-center gap-2 shrink-0">
-            <button id="btnQuickCopyPrev" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 flat-pill text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition">
+            <button id="btnQuickCopyPrev" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 flat-pill text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition">
               <i data-lucide="copy" class="w-3.5 h-3.5"></i>
               <span>העתק מחודש קודם</span>
             </button>
-            <button id="btnQuickSave" type="button" class="inline-flex items-center gap-1.5 px-4 py-1.5 flat-pill text-xs font-semibold bg-[#1e3a5f] hover:bg-[#2b6cb0] text-white transition">
+            <button id="btnQuickSave" type="button" class="inline-flex items-center gap-1.5 px-4 py-2 flat-pill text-xs font-semibold bg-[#1e3a5f] hover:bg-[#2b6cb0] text-white transition">
               <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
               <span>שמור יתרות</span>
             </button>
@@ -576,7 +584,7 @@
           </div>
         </div>
 
-        <div class="overflow-x-auto">
+        <div id="monthlyTableScrollWrap" class="overflow-x-auto">
           <table class="w-full text-sm text-right">
             <thead id="monthlyTableHead" class="bg-[#1e3a5f] text-white"></thead>
             <tbody id="monthlyTableBody" class="divide-y divide-slate-200"></tbody>
@@ -605,7 +613,7 @@
 
   <!-- Reset Confirmation Modal -->
   <div id="resetModal" class="modal-backdrop hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
-    <div class="flat-card max-w-md w-full p-6 border-2 border-slate-300">
+    <div class="flat-card max-w-md w-full p-6">
       <h3 class="text-lg font-bold text-[#1e3a5f]">איפוס נתונים לנקודת ההתחלה?</h3>
       <p class="text-sm text-slate-600 mt-2">פעולה זו תמחק את כל העדכונים הידניים ותחזיר את הטבלה והקופות לנתוני הבסיס.</p>
       <div class="mt-5 flex justify-end gap-2">
@@ -617,9 +625,9 @@
 
   <!-- Calendar Reminder Modal -->
   <div id="calendarModal" class="modal-backdrop hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
-    <div class="flat-card max-w-md w-full p-6 border-2 border-slate-300 space-y-4">
+    <div class="flat-card max-w-md w-full p-6 space-y-4">
       <div class="flex items-center gap-2.5">
-        <span class="p-2.5 flat-pill bg-indigo-50 text-[#2b6cb0]"><i data-lucide="calendar-plus" class="w-5 h-5"></i></span>
+        <span class="p-2.5 rounded-2xl bg-indigo-50 text-indigo-600"><i data-lucide="calendar-plus" class="w-5 h-5"></i></span>
         <h3 class="text-lg font-bold text-[#1e3a5f]">הגדרת תזכורת ביומן</h3>
       </div>
       <p class="text-xs text-slate-500">בחר תאריך ושעה לתזכורת לעדכון היתרות. הקובץ יוסיף את האירוע ישירות ליומן שלך.</p>
@@ -639,17 +647,17 @@
       </label>
       <div class="pt-2 flex justify-end gap-2">
         <button id="btnCancelCal" type="button" class="px-4 py-2 flat-pill text-sm font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">ביטול</button>
-        <button id="btnDownloadCal" type="button" class="px-4 py-2 flat-pill text-sm font-semibold bg-[#2b6cb0] hover:bg-[#1e3a5f] text-white transition">הורד תזכורת (.ics)</button>
+        <button id="btnDownloadCal" type="button" class="px-4 py-2 flat-pill text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition">הורד תזכורת (.ics)</button>
       </div>
     </div>
   </div>
 
   <!-- Manage Funds Modal (Add & Remove) -->
   <div id="manageFundsModal" class="modal-backdrop hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
-    <div class="flat-card max-w-lg w-full p-6 border-2 border-slate-300 space-y-5 max-h-[90vh] overflow-y-auto">
+    <div class="flat-card max-w-lg w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-slate-200 pb-3">
         <div class="flex items-center gap-2.5">
-          <span class="p-2.5 flat-pill bg-blue-50 text-[#1e3a5f]"><i data-lucide="settings-2" class="w-5 h-5"></i></span>
+          <span class="p-2.5 rounded-2xl bg-blue-50 text-[#1e3a5f]"><i data-lucide="settings-2" class="w-5 h-5"></i></span>
           <div>
             <h3 class="text-lg font-bold text-[#1e3a5f]">ניהול קופות</h3>
             <p class="text-xs text-slate-500">הוספה או מחיקה של קופות ותוכניות חיסכון</p>
@@ -678,15 +686,15 @@
           </div>
           <div class="sm:col-span-2">
             <label for="newFundUrl" class="block text-xs font-semibold text-slate-600 mb-1">אתר הבית (אופציונלי)</label>
-            <input id="newFundUrl" type="url" dir="ltr" placeholder="https://www.example.co.il/" class="flat-input w-full px-3 py-2 text-sm text-left" />
+            <input id="newFundUrl" type="url" dir="ltr" placeholder="https://www.example.co.il/" class="flat-input w-full px-3 py-2 text-sm text-right" />
           </div>
           <div>
             <label for="newFundFeeAcc" class="block text-xs font-semibold text-slate-600 mb-1">דמי ניהול מצבירה</label>
-            <input id="newFundFeeAcc" type="text" dir="ltr" placeholder="0.50%" class="flat-input w-full px-3 py-2 text-sm text-left" />
+            <input id="newFundFeeAcc" type="text" dir="ltr" placeholder="0.50%" class="flat-input w-full px-3 py-2 text-sm text-right" />
           </div>
           <div>
             <label for="newFundFeeDep" class="block text-xs font-semibold text-slate-600 mb-1">דמי ניהול מהפקדה</label>
-            <input id="newFundFeeDep" type="text" dir="ltr" placeholder="1.00% או —" class="flat-input w-full px-3 py-2 text-sm text-left" />
+            <input id="newFundFeeDep" type="text" dir="ltr" placeholder="1.00% או —" class="flat-input w-full px-3 py-2 text-sm text-right" />
           </div>
         </div>
         <div class="flex justify-end pt-1">
@@ -699,10 +707,53 @@
     </div>
   </div>
 
-  <!-- Android 14 Flat Snackbar / Toast -->
-  <div id="toast" role="status" aria-live="polite" class="hidden fixed bottom-6 left-4 right-4 sm:right-auto sm:left-5 z-50 bg-[#1e3a5f] text-white px-4 py-3 rounded-2xl border border-[#2b6cb0] text-sm font-semibold text-center sm:text-right flex items-center justify-between gap-3">
+  <!-- Cloud Auto-Sync Modal -->
+  <div id="cloudSyncModal" class="modal-backdrop hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+    <div class="flat-card max-w-lg w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="p-2.5 rounded-2xl bg-blue-50 text-[#2b6cb0]"><i data-lucide="cloud" class="w-5 h-5"></i></span>
+          <div>
+            <h3 class="text-lg font-bold text-[#1e3a5f]">סנכרון ענן אוטומטי בין מכשירים</h3>
+            <p class="text-xs text-slate-500">סנכרון חינמי בזמן אמת בין המחשב, האייפון והאנדרואיד</p>
+          </div>
+        </div>
+        <button id="btnCloseCloudModal" type="button" aria-label="סגור" class="w-8 h-8 flat-pill bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm flex items-center justify-center">✕</button>
+      </div>
+
+      <div class="flat-tonal-card p-3.5 text-xs text-slate-600 space-y-1.5 leading-relaxed">
+        <div class="font-bold text-[#1e3a5f]">איך מחברים תוך דקה (חד-פעמי):</div>
+        <div>1. היכנס ל-<a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" class="text-[#2b6cb0] font-bold underline">Firebase Console</a> → צור פרויקט חינמי → <strong>Realtime Database</strong> (במצב Test Mode).</div>
+        <div>2. העתק את כתובת ה-Database URL והזן כאן יחד עם קוד סנכרון אישי (לדוגמה: <code class="bg-slate-200 px-1.5 py-0.5 rounded">artur2026</code>).</div>
+        <div>3. הזן את אותם פרטים גם במכשיר השני — ומאותו רגע כל שינוי יסתנכרן אוטומטית!</div>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label for="cloudDbUrlInput" class="block text-xs font-semibold text-slate-600 mb-1">כתובת Firebase Realtime Database URL *</label>
+          <input id="cloudDbUrlInput" type="url" dir="ltr" placeholder="https://savemoney-default-rtdb.firebaseio.com" class="flat-input w-full px-3 py-2 text-sm text-left" />
+        </div>
+        <div>
+          <label for="cloudSyncKeyInput" class="block text-xs font-semibold text-slate-600 mb-1">קוד סנכרון אישי (מזהה סודי משותף לכל המכשירים) *</label>
+          <input id="cloudSyncKeyInput" type="text" dir="ltr" placeholder="לדוגמה: my-secret-family-key-2026" class="flat-input w-full px-3 py-2 text-sm text-left" />
+        </div>
+        <div id="cloudLastSyncText" class="text-xs text-slate-500">סטטוס: לא מחובר לענן</div>
+      </div>
+
+      <div class="pt-2 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+        <button id="btnDisconnectCloud" type="button" class="px-3.5 py-2 flat-pill text-xs font-semibold text-red-600 hover:bg-red-50 border border-red-200 transition">נתק סנכרון</button>
+        <div class="flex items-center gap-2">
+          <button id="btnPullCloudNow" type="button" class="px-3.5 py-2 flat-pill text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition">משוך מהענן כעת</button>
+          <button id="btnSaveCloudConfig" type="button" class="px-4 py-2 flat-pill text-xs font-semibold bg-[#1e3a5f] hover:bg-[#2b6cb0] text-white transition">שמור וסנכרן עכשיו</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" role="status" aria-live="polite" class="hidden fixed bottom-6 left-4 right-4 sm:right-auto sm:left-5 z-50 bg-[#1e3a5f] text-white px-5 py-3 flat-pill border border-white/15 text-sm font-semibold text-center sm:text-right flex items-center justify-between gap-3">
     <span id="toastMessage"></span>
-    <button id="toastUndoBtn" type="button" class="hidden px-3 py-1 flat-pill bg-[#2b6cb0] hover:bg-white/25 text-xs font-bold text-white shrink-0 transition">בטל פעולה</button>
+    <button id="toastUndoBtn" type="button" class="hidden px-3 py-1 flat-pill bg-[#2b6cb0] hover:bg-white/25 text-xs font-semibold text-white shrink-0 transition">בטל פעולה</button>
   </div>
 
   <script>
@@ -743,6 +794,7 @@
 
     function saveFunds() {
       try { localStorage.setItem(FUNDS_STORAGE_KEY, JSON.stringify(state.funds)); } catch (e) {}
+      scheduleCloudPush();
     }
 
     const HEBREW_MONTHS = [
@@ -810,6 +862,7 @@
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state.rows));
       } catch (e) {}
+      scheduleCloudPush();
     }
 
     const TRACKS_STORAGE_KEY = "personal_savings_tracks_v2";
@@ -844,6 +897,7 @@
 
     function saveTracks() {
       try { localStorage.setItem(TRACKS_STORAGE_KEY, JSON.stringify(state.tracks)); } catch (e) {}
+      scheduleCloudPush();
     }
 
     function loadGoal() {
@@ -856,6 +910,7 @@
 
     function saveGoal() {
       try { localStorage.setItem(GOAL_STORAGE_KEY, String(state.goalAmount)); } catch (e) {}
+      scheduleCloudPush();
     }
 
     const state = {
@@ -881,6 +936,7 @@
     const undoStack = [];
     const redoStack = [];
     let isApplyingHistory = false;
+    let lastUndoableActionId = null;
 
     function cloneSnapshot() {
       return {
@@ -899,7 +955,7 @@
         undoBtn.disabled = undoStack.length === 0;
         undoBtn.title = undoStack.length > 0
           ? `בטל: ${undoStack[undoStack.length - 1].label} (Ctrl+Z)`
-          : "אין פעולות לביטול";
+          : "אין פעולות לביטול (בצע שינוי כלשהו ואז לחץ בטל)";
       }
       if (redoBtn) {
         redoBtn.disabled = redoStack.length === 0;
@@ -911,7 +967,7 @@
 
     function recordAction(label, beforeSnapshot, options = {}) {
       if (isApplyingHistory) return;
-      const { coalesceKey = null, coalesceWindowMs = 1500 } = options;
+      const { coalesceKey = null, coalesceWindowMs = 1500, offerToastUndo = false } = options;
       const now = Date.now();
       const afterSnapshot = cloneSnapshot();
       const top = undoStack.length > 0 ? undoStack[undoStack.length - 1] : null;
@@ -924,16 +980,18 @@
         return;
       }
 
-      undoStack.push({
+      const entry = {
         id: `${now}-${Math.random().toString(36).slice(2, 7)}`,
         label,
         coalesceKey,
         timestamp: now,
         before: beforeSnapshot || cloneSnapshot(),
         after: afterSnapshot
-      });
+      };
+      undoStack.push(entry);
       if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
       redoStack.length = 0;
+      lastUndoableActionId = offerToastUndo ? entry.id : null;
       updateHistoryButtons();
     }
 
@@ -970,16 +1028,18 @@
       } finally {
         isApplyingHistory = false;
       }
+      scheduleCloudPush();
     }
 
     function undoLastAction() {
       if (undoStack.length === 0) {
-        showToast("אין פעולה לביטול");
+        showToast("אין פעולה לביטול — בצע שינוי כלשהו ואז תוכל לשחזר");
         return;
       }
       const entry = undoStack.pop();
       redoStack.push(entry);
       applySnapshot(entry.before);
+      lastUndoableActionId = null;
       updateHistoryButtons();
       showToast(`שוחזר: ${entry.label}`);
     }
@@ -992,6 +1052,7 @@
       const entry = redoStack.pop();
       undoStack.push(entry);
       applySnapshot(entry.after);
+      lastUndoableActionId = null;
       updateHistoryButtons();
       showToast(`בוצע שוב: ${entry.label}`);
     }
@@ -1109,15 +1170,15 @@
 
       const momDiffEl = document.getElementById("kpiMomDiff");
       momDiffEl.textContent = latest.momDiff !== null ? formatNIS(latest.momDiff, true) : "0 ₪";
-      momDiffEl.className = `text-2xl font-bold mt-2.5 ${latest.momDiff > 0 ? "text-emerald-700" : latest.momDiff < 0 ? "text-red-700" : "text-slate-700"}`;
+      momDiffEl.className = `text-2xl font-bold mt-3 tabular-nums ${latest.momDiff > 0 ? "text-emerald-700" : latest.momDiff < 0 ? "text-red-700" : "text-slate-700"}`;
 
       const momPctEl = document.getElementById("kpiMomPct");
       momPctEl.textContent = latest.momPct !== null ? formatPct(latest.momPct) : "0.00%";
-      momPctEl.className = `text-2xl font-bold mt-2.5 ${latest.momPct > 0 ? "text-emerald-700" : latest.momPct < 0 ? "text-red-700" : "text-slate-700"}`;
+      momPctEl.className = `text-2xl font-bold mt-3 tabular-nums ${latest.momPct > 0 ? "text-emerald-700" : latest.momPct < 0 ? "text-red-700" : "text-slate-700"}`;
 
       const cumDiffEl = document.getElementById("kpiCumDiff");
       cumDiffEl.textContent = latest.cumDiff !== null ? formatNIS(latest.cumDiff, true) : "0 ₪";
-      cumDiffEl.className = `text-2xl font-bold mt-2.5 ${latest.cumDiff > 0 ? "text-emerald-700" : latest.cumDiff < 0 ? "text-red-700" : "text-slate-700"}`;
+      cumDiffEl.className = `text-2xl font-bold mt-3 tabular-nums ${latest.cumDiff > 0 ? "text-emerald-700" : latest.cumDiff < 0 ? "text-red-700" : "text-slate-700"}`;
     }
 
     function renderDashSummary(computed) {
@@ -1140,19 +1201,19 @@
         const trackObj = state.tracks[f.id] || { name: "", equityPct: 50 };
 
         html += `
-          <tr class="hover:bg-slate-50 transition-colors">
-            <td class="px-4 py-3 font-bold text-slate-800">${escHtml(f.name)}</td>
-            <td class="px-4 py-3">${f.providerUrl ? `<a href="${escAttr(f.providerUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 font-semibold text-[#2b6cb0] hover:text-[#1e3a5f] hover:underline">${escHtml(f.provider)} <span class="text-[11px]">↗</span></a>` : `<span class="text-slate-600">${escHtml(f.provider || "—")}</span>`}</td>
-            <td class="px-4 py-2">
+          <tr class="hover:bg-slate-50">
+            <td class="px-4 py-3.5 font-semibold text-slate-800">${escHtml(f.name)}</td>
+            <td class="px-4 py-3.5">${f.providerUrl ? `<a href="${escAttr(f.providerUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 font-semibold text-[#2b6cb0] hover:text-[#1e3a5f] hover:underline">${escHtml(f.provider)} <span class="text-[11px]">↗</span></a>` : `<span class="text-slate-600">${escHtml(f.provider || "—")}</span>`}</td>
+            <td class="px-4 py-2.5">
               <input type="text" data-track-name="${escAttr(f.id)}" value="${escAttr(trackObj.name || "")}" placeholder="הזן מסלול..."
                 class="track-name-input flat-input w-36 px-3 py-1.5 text-xs font-medium text-slate-800" />
             </td>
-            <td class="px-4 py-3 text-slate-600">${escHtml(f.feeAcc)}</td>
-            <td class="px-4 py-3 text-slate-600">${escHtml(f.feeDep)}</td>
-            <td class="px-4 py-3 text-slate-700">${formatNIS(initVal)}</td>
-            <td class="px-4 py-3 font-bold text-[#1e3a5f]">${formatNIS(curr)}</td>
-            <td class="px-4 py-3 ${diffClass(diff)}">${formatNIS(diff, true)}</td>
-            <td class="px-4 py-3 text-slate-700">${(share * 100).toFixed(1)}%</td>
+            <td class="px-4 py-3.5 text-slate-600 tabular-nums">${escHtml(f.feeAcc)}</td>
+            <td class="px-4 py-3.5 text-slate-600 tabular-nums">${escHtml(f.feeDep)}</td>
+            <td class="px-4 py-3.5 text-slate-700 tabular-nums">${formatNIS(initVal)}</td>
+            <td class="px-4 py-3.5 font-bold text-[#1e3a5f] tabular-nums">${formatNIS(curr)}</td>
+            <td class="px-4 py-3.5 tabular-nums ${diffClass(diff)}">${formatNIS(diff, true)}</td>
+            <td class="px-4 py-3.5 text-slate-700 tabular-nums">${(share * 100).toFixed(1)}%</td>
           </tr>
         `;
       });
@@ -1160,15 +1221,15 @@
       const totalDiff = latestTotal - initSum;
       html += `
         <tr class="bg-slate-100 font-bold border-t-2 border-[#1e3a5f]">
-          <td class="px-4 py-3 text-[#1e3a5f]">סה"כ תיק חסכונות</td>
-          <td class="px-4 py-3"></td>
-          <td class="px-4 py-3"></td>
-          <td class="px-4 py-3"></td>
-          <td class="px-4 py-3"></td>
-          <td class="px-4 py-3">${formatNIS(initSum)}</td>
-          <td class="px-4 py-3 text-[#1e3a5f]">${formatNIS(latestTotal)}</td>
-          <td class="px-4 py-3 ${diffClass(totalDiff)}">${formatNIS(totalDiff, true)}</td>
-          <td class="px-4 py-3">100.0%</td>
+          <td class="px-4 py-3.5 text-[#1e3a5f]">סה"כ תיק חסכונות</td>
+          <td class="px-4 py-3.5"></td>
+          <td class="px-4 py-3.5"></td>
+          <td class="px-4 py-3.5"></td>
+          <td class="px-4 py-3.5"></td>
+          <td class="px-4 py-3.5 tabular-nums">${formatNIS(initSum)}</td>
+          <td class="px-4 py-3.5 text-[#1e3a5f] tabular-nums">${formatNIS(latestTotal)}</td>
+          <td class="px-4 py-3.5 tabular-nums ${diffClass(totalDiff)}">${formatNIS(totalDiff, true)}</td>
+          <td class="px-4 py-3.5 tabular-nums">100.0%</td>
         </tr>
       `;
       tbody.innerHTML = html;
@@ -1245,8 +1306,8 @@
             <label class="block text-[11px] font-semibold text-slate-700 mb-1 truncate" title="${escAttr(f.name)}">${escHtml(f.name)}</label>
             <div class="relative">
               <input type="text" inputmode="numeric" dir="ltr" data-qe-fund="${escAttr(f.id)}" value="${displayVal}" placeholder="יתרה..."
-                class="qe-fund-input flat-input w-full pl-6 pr-2.5 py-1.5 text-right text-xs font-bold" />
-              <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-[11px] font-bold text-slate-400 pointer-events-none">₪</span>
+                class="qe-fund-input flat-input w-full pl-6 pr-2.5 py-1.5 text-right text-xs font-bold tabular-nums" />
+              <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] font-bold text-slate-400 pointer-events-none">₪</span>
             </div>
           </div>`;
       }).join("");
@@ -1264,14 +1325,14 @@
       const thead = document.getElementById("monthlyTableHead");
       if (thead) {
         thead.innerHTML = `<tr>
-          <th class="sticky-col-year w-14 min-w-[3.5rem] px-2.5 py-3 font-semibold">שנה</th>
-          <th class="sticky-col-month w-24 min-w-[6rem] px-3 py-3 font-semibold">חודש</th>
-          ${state.funds.map(f => `<th class="px-3 py-3 font-semibold whitespace-nowrap">${escHtml(f.name)}</th>`).join("")}
-          <th class="px-3 py-3 font-semibold bg-[#2b6cb0] whitespace-nowrap">סה"כ תיק</th>
-          <th class="px-3 py-3 font-semibold bg-[#2b6cb0] whitespace-nowrap">רווח/הפסד מחודש קודם</th>
-          <th class="px-3 py-3 font-semibold bg-[#2b6cb0] whitespace-nowrap">שינוי (%)</th>
-          <th class="px-3 py-3 font-semibold bg-[#2b6cb0] whitespace-nowrap">מצטבר (₪)</th>
-          <th class="px-3 py-3 font-semibold whitespace-nowrap">הערות</th>
+          <th class="px-3 py-3.5 font-semibold sticky-col-year whitespace-nowrap">שנה</th>
+          <th class="px-3 py-3.5 font-semibold sticky-col-month whitespace-nowrap">חודש</th>
+          ${state.funds.map(f => `<th class="px-3 py-3.5 font-semibold whitespace-nowrap">${escHtml(f.name)}</th>`).join("")}
+          <th class="px-3 py-3.5 font-semibold bg-[#2b6cb0] whitespace-nowrap">סה"כ תיק</th>
+          <th class="px-3 py-3.5 font-semibold bg-[#2b6cb0] whitespace-nowrap">רווח/הפסד מחודש קודם</th>
+          <th class="px-3 py-3.5 font-semibold bg-[#2b6cb0] whitespace-nowrap">שינוי (%)</th>
+          <th class="px-3 py-3.5 font-semibold bg-[#2b6cb0] whitespace-nowrap">מצטבר (₪)</th>
+          <th class="px-3 py-3.5 font-semibold whitespace-nowrap">הערות</th>
         </tr>`;
       }
 
@@ -1319,38 +1380,41 @@
       const tbody = document.getElementById("monthlyTableBody");
       let html = "";
       indexed.forEach(({ row, origIdx }) => {
-        html += `<tr class="hover:bg-slate-50 transition-colors">
-          <td class="sticky-col-year w-14 min-w-[3.5rem] px-2.5 py-2 font-semibold text-slate-700 bg-slate-50">${row.year}</td>
-          <td class="sticky-col-month w-24 min-w-[6rem] px-3 py-2 font-semibold text-slate-700 bg-slate-50 whitespace-nowrap">${escHtml(row.monthName)}</td>`;
+        html += `<tr class="hover:bg-slate-50">
+          <td class="px-3 py-2.5 font-semibold text-slate-700 bg-slate-50 sticky-col-year tabular-nums whitespace-nowrap">${row.year}</td>
+          <td class="px-3 py-2.5 font-semibold text-slate-700 bg-slate-50 sticky-col-month whitespace-nowrap">${escHtml(row.monthName)}</td>`;
 
         state.funds.forEach(f => {
           const v = row.values[f.id];
           const displayVal = (typeof v === "number" && !Number.isNaN(v)) ? formatCommaInt(v) : "";
           html += `
-            <td class="px-2 py-1.5 bg-white">
-              <div class="relative w-40 sm:w-36">
+            <td class="px-2.5 py-2 bg-white">
+              <div class="relative w-40">
                 <input type="text" inputmode="numeric" dir="ltr" data-row="${origIdx}" data-fund="${escAttr(f.id)}"
                   value="${displayVal}" placeholder="הזן סכום"
-                  class="monthly-input tabular-nums flat-input w-full pl-6 pr-2.5 py-1.5 text-right text-sm font-medium" />
-                <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">₪</span>
+                  class="monthly-input flat-input w-full pl-6 pr-3 py-1.5 text-right text-sm font-medium tabular-nums" />
+                <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 pointer-events-none">₪</span>
               </div>
             </td>`;
         });
 
         html += `
-          <td class="px-3 py-2 font-bold text-[#1e3a5f] bg-slate-100 whitespace-nowrap tabular-nums" data-cell="total-${origIdx}">${formatNIS(row.total)}</td>
-          <td class="px-3 py-2 whitespace-nowrap tabular-nums ${diffClass(row.momDiff)}" data-cell="mom-${origIdx}">${formatNIS(row.momDiff, true)}</td>
-          <td class="px-3 py-2 whitespace-nowrap tabular-nums ${diffClass(row.momPct)}" data-cell="pct-${origIdx}">${formatPct(row.momPct)}</td>
-          <td class="px-3 py-2 whitespace-nowrap tabular-nums ${diffClass(row.cumDiff)}" data-cell="cum-${origIdx}">${formatNIS(row.cumDiff, true)}</td>
-          <td class="px-2 py-1.5 bg-white">
+          <td class="px-3 py-2.5 font-bold text-[#1e3a5f] bg-slate-100 whitespace-nowrap tabular-nums" data-cell="total-${origIdx}">${formatNIS(row.total)}</td>
+          <td class="px-3 py-2.5 whitespace-nowrap tabular-nums ${diffClass(row.momDiff)}" data-cell="mom-${origIdx}">${formatNIS(row.momDiff, true)}</td>
+          <td class="px-3 py-2.5 whitespace-nowrap tabular-nums ${diffClass(row.momPct)}" data-cell="pct-${origIdx}">${formatPct(row.momPct)}</td>
+          <td class="px-3 py-2.5 whitespace-nowrap tabular-nums ${diffClass(row.cumDiff)}" data-cell="cum-${origIdx}">${formatNIS(row.cumDiff, true)}</td>
+          <td class="px-2.5 py-2 bg-white">
             <input type="text" data-row="${origIdx}" data-note="1" value="${escAttr(row.note || "")}" placeholder="הערה..."
-              class="note-input flat-input w-40 px-2.5 py-1.5 text-xs" />
+              class="note-input flat-input w-40 px-3 py-1.5 text-xs" />
           </td>
         </tr>`;
       });
       tbody.innerHTML = html;
-      const scrollContainer = tbody.closest(".overflow-x-auto");
-      if (scrollContainer) scrollContainer.scrollLeft = 0;
+
+      const scrollWrap = document.getElementById("monthlyTableScrollWrap");
+      if (scrollWrap) {
+        scrollWrap.scrollLeft = 0;
+      }
 
       tbody.querySelectorAll(".monthly-input").forEach(inp => {
         inp.addEventListener("input", (e) => {
@@ -1425,7 +1489,7 @@
       } else if (state.chartMode === "cum") {
         seriesLabel = "רווח / הפסד מצטבר (₪)";
         dataSeries = chartRows.map(r => r.cumDiff ?? 0);
-        bgColors = dataSeries.map(v => v >= 0 ? "#2b6cb0" : "#dc2626");
+        bgColors = dataSeries.map(v => v >= 0 ? "#2563eb" : "#dc2626");
       } else {
         chartType = "line";
         seriesLabel = 'סה"כ שווי תיק (₪)';
@@ -1445,7 +1509,7 @@
             backgroundColor: bgColors,
             borderColor: chartType === "line" ? theme.lineColor : bgColors,
             borderWidth: chartType === "line" ? 3 : 0,
-            borderRadius: chartType === "bar" ? 10 : 0,
+            borderRadius: chartType === "bar" ? 8 : 0,
             tension: 0.25,
             fill: chartType === "line" ? { target: "origin", above: theme.lineFill } : false
           }]
@@ -1493,11 +1557,11 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          cutout: "62%",
+          cutout: "60%",
           plugins: {
             legend: {
               position: "bottom",
-              labels: { boxWidth: 12, color: theme.legendColor, font: { family: "Rubik, Arial", size: 12 } }
+              labels: { boxWidth: 12, color: theme.legendColor, font: { family: "Rubik", size: 12 } }
             },
             tooltip: {
               callbacks: {
@@ -1550,7 +1614,7 @@
           plugins: {
             legend: {
               position: "bottom",
-              labels: { boxWidth: 12, color: theme.legendColor, font: { family: "Rubik, Arial", size: 12 } }
+              labels: { boxWidth: 12, color: theme.legendColor, font: { family: "Rubik", size: 12 } }
             },
             tooltip: {
               callbacks: {
@@ -1621,15 +1685,15 @@
         if (totEl) totEl.textContent = formatNIS(row.total);
         if (momEl) {
           momEl.textContent = formatNIS(row.momDiff, true);
-          momEl.className = `px-3 py-2 whitespace-nowrap ${diffClass(row.momDiff)}`;
+          momEl.className = `px-3 py-2.5 whitespace-nowrap tabular-nums ${diffClass(row.momDiff)}`;
         }
         if (pctEl) {
           pctEl.textContent = formatPct(row.momPct);
-          pctEl.className = `px-3 py-2 whitespace-nowrap ${diffClass(row.momPct)}`;
+          pctEl.className = `px-3 py-2.5 whitespace-nowrap tabular-nums ${diffClass(row.momPct)}`;
         }
         if (cumEl) {
           cumEl.textContent = formatNIS(row.cumDiff, true);
-          cumEl.className = `px-3 py-2 whitespace-nowrap ${diffClass(row.cumDiff)}`;
+          cumEl.className = `px-3 py-2.5 whitespace-nowrap tabular-nums ${diffClass(row.cumDiff)}`;
         }
       });
     }
@@ -1638,27 +1702,25 @@
       const thead = document.getElementById("byFundTableHead");
       if (thead) {
         thead.innerHTML = `<tr>
-          <th class="sticky-col-year w-14 min-w-[3.5rem] px-2.5 py-3 font-semibold">שנה</th>
-          <th class="sticky-col-month w-24 min-w-[6rem] px-3 py-3 font-semibold">חודש</th>
-          ${state.funds.map(f => `<th class="px-3 py-3 font-semibold whitespace-nowrap">${escHtml(f.name)}</th>`).join("")}
-          <th class="px-3 py-3 font-semibold bg-[#2b6cb0] whitespace-nowrap">סה"כ שינוי חודשי</th>
+          <th class="px-3 py-3.5 font-semibold sticky-col-year whitespace-nowrap">שנה</th>
+          <th class="px-3 py-3.5 font-semibold sticky-col-month whitespace-nowrap">חודש</th>
+          ${state.funds.map(f => `<th class="px-3 py-3.5 font-semibold whitespace-nowrap">${escHtml(f.name)}</th>`).join("")}
+          <th class="px-3 py-3.5 font-semibold bg-[#2b6cb0] whitespace-nowrap">סה"כ שינוי חודשי</th>
         </tr>`;
       }
       const tbody = document.getElementById("byFundTableBody");
       let html = "";
       computed.forEach((row) => {
-        html += `<tr class="hover:bg-slate-50 transition-colors">
-          <td class="sticky-col-year w-14 min-w-[3.5rem] px-2.5 py-2 font-semibold text-slate-700 bg-slate-50">${row.year}</td>
-          <td class="sticky-col-month w-24 min-w-[6rem] px-3 py-2 font-semibold text-slate-700 bg-slate-50 whitespace-nowrap">${escHtml(row.monthName)}</td>`;
+        html += `<tr class="hover:bg-slate-50">
+          <td class="px-3 py-2.5 font-semibold text-slate-700 bg-slate-50 sticky-col-year tabular-nums whitespace-nowrap">${row.year}</td>
+          <td class="px-3 py-2.5 font-semibold text-slate-700 bg-slate-50 sticky-col-month whitespace-nowrap">${escHtml(row.monthName)}</td>`;
         state.funds.forEach(f => {
           const d = row.fundDiffs[f.id];
-          html += `<td class="px-3 py-2 whitespace-nowrap tabular-nums ${diffClass(d)}">${formatDiffCell(d)}</td>`;
+          html += `<td class="px-3 py-2.5 whitespace-nowrap tabular-nums ${diffClass(d)}">${formatDiffCell(d)}</td>`;
         });
-        html += `<td class="px-3 py-2 whitespace-nowrap tabular-nums bg-slate-100 ${diffClass(row.momDiff)}">${formatDiffCell(row.momDiff)}</td></tr>`;
+        html += `<td class="px-3 py-2.5 whitespace-nowrap tabular-nums bg-slate-100 ${diffClass(row.momDiff)}">${formatDiffCell(row.momDiff)}</td></tr>`;
       });
       tbody.innerHTML = html;
-      const scrollContainer = tbody.closest(".overflow-x-auto");
-      if (scrollContainer) scrollContainer.scrollLeft = 0;
     }
 
     function renderAll() {
@@ -1684,6 +1746,10 @@
           ? "tab-active px-5 py-2.5 flat-pill text-sm font-semibold transition inline-flex items-center gap-2"
           : "tab-inactive px-5 py-2.5 flat-pill text-sm font-semibold transition inline-flex items-center gap-2";
       });
+      if (tab === "monthly") {
+        const scrollWrap = document.getElementById("monthlyTableScrollWrap");
+        if (scrollWrap) scrollWrap.scrollLeft = 0;
+      }
     }
 
     function showToast(msg, options = {}) {
@@ -1733,7 +1799,7 @@
         const el = document.getElementById(id);
         el.className = k === range
           ? "px-3 py-1.5 flat-pill text-xs font-semibold bg-[#2b6cb0] text-white transition"
-          : "px-2.5 py-1.5 flat-pill text-xs font-semibold text-slate-600 hover:text-slate-900 transition";
+          : "px-3 py-1.5 flat-pill text-xs font-semibold text-slate-600 hover:text-slate-900 transition";
       });
       renderCharts(computeMetrics());
     }
@@ -1765,7 +1831,7 @@
       });
       state.hideEmptyFuture = false;
       saveState();
-      recordAction(`הוספת חודש ${HEBREW_MONTHS[nextM]} ${nextY}`, beforeSnap);
+      recordAction(`הוספת חודש ${HEBREW_MONTHS[nextM]} ${nextY}`, beforeSnap, { offerToastUndo: true });
       renderAll();
       showToast(`נוסף חודש ${HEBREW_MONTHS[nextM]} ${nextY}`, { showUndo: true });
     });
@@ -1830,7 +1896,7 @@
       }
 
       saveState();
-      recordAction(`שמירת יתרות ${HEBREW_MONTHS[m]} ${y}`, beforeSnap);
+      recordAction(`שמירת יתרות ${HEBREW_MONTHS[m]} ${y}`, beforeSnap, { offerToastUndo: true });
       renderAll();
       showToast(`היתרות ל${HEBREW_MONTHS[m]} ${y} נשמרו בהצלחה!`, { showUndo: true });
     });
@@ -1858,7 +1924,7 @@
       state.rows = buildDefaultRows();
       saveState();
       initQuickEntryTarget(true);
-      recordAction("איפוס נתונים לנקודת ההתחלה", beforeSnap);
+      recordAction("איפוס נתונים לנקודת ההתחלה", beforeSnap, { offerToastUndo: true });
       renderAll();
       document.getElementById("resetModal").classList.add("hidden");
       showToast("הנתונים אופסו לנתוני הבסיס", { showUndo: true });
@@ -1904,7 +1970,6 @@
       reader.onload = (ev) => {
         try {
           const parsed = JSON.parse(ev.target.result);
-          const beforeSnap = cloneSnapshot();
           if (Array.isArray(parsed.funds) && parsed.funds.length > 0) {
             state.funds = parsed.funds;
           } else {
@@ -1936,9 +2001,8 @@
             renderAgents();
           }
           initQuickEntryTarget(true);
-          recordAction("טעינת גיבוי JSON", beforeSnap);
           renderAll();
-          showToast("הגיבוי שוחזר בהצלחה!", { showUndo: true });
+          showToast("הגיבוי שוחזר בהצלחה!");
         } catch (err) {
           showToast("שגיאה: קובץ הגיבוי אינו תקין");
         }
@@ -1948,162 +2012,163 @@
     });
 
     document.getElementById("btnExportCsv").addEventListener("click", () => {
-      try {
-        const computed = computeMetrics();
-        const populated = computed.filter(r => r.total !== null);
-        const latest = populated.length > 0 ? populated[populated.length - 1] : computed[0];
-        const latestTotal = latest.total || 0;
+      const computed = computeMetrics();
+      const populated = computed.filter(r => r.total !== null);
+      const latest = populated.length > 0 ? populated[populated.length - 1] : computed[0];
+      const latestTotal = latest.total || 0;
 
-        const fmtNum = (n) => (n === null || n === undefined || Number.isNaN(n)) ? "" : Math.round(n).toLocaleString("he-IL") + " ₪";
-        const fmtDiff = (n) => {
-          if (n === null || n === undefined || Number.isNaN(n)) return "";
-          const s = Math.abs(Math.round(n)).toLocaleString("he-IL") + " ₪";
-          return n > 0 ? "+" + s : n < 0 ? "-" + s : "0 ₪";
-        };
-        const diffStyle = (n) => {
-          if (n === null || n === undefined || n === 0) return "color:#334155;";
-          return n > 0 ? "color:#166534;background-color:#dcfce7;font-weight:bold;" : "color:#991b1b;background-color:#fee2e2;font-weight:bold;";
-        };
+      const fmtNum = (n) => (n === null || n === undefined || Number.isNaN(n)) ? "" : Math.round(n).toLocaleString("he-IL") + " ₪";
+      const fmtDiff = (n) => {
+        if (n === null || n === undefined || Number.isNaN(n)) return "";
+        const s = Math.abs(Math.round(n)).toLocaleString("he-IL") + " ₪";
+        return n > 0 ? "+" + s : n < 0 ? "-" + s : "0 ₪";
+      };
+      const diffStyle = (n) => {
+        if (n === null || n === undefined || n === 0) return "color:#334155;";
+        return n > 0 ? "color:#166534;background-color:#dcfce7;font-weight:bold;" : "color:#991b1b;background-color:#fee2e2;font-weight:bold;";
+      };
 
-        const el = (name, attrs, inner) => `<${name}${attrs ? " " + attrs : ""}>${inner}</${name}>`;
-        const cell = (attrs, inner) => el("td", attrs, inner);
-        const thCell = (attrs, inner) => el("th", attrs, inner);
-        const row = (attrs, inner) => el("tr", attrs, inner);
-        const tbl = (attrs, inner) => el("table", attrs, inner);
+      const tag = (name, attrs, inner) => "<" + name + (attrs ? " " + attrs : "") + ">" + inner + "</" + name + ">";
+      const cell = (inner, style) => tag("td", style ? `style="${style}"` : "", inner);
+      const thCell = (inner, cls) => tag("th", cls ? `class="${cls}"` : "", inner);
+      const row = (cells, style) => tag("tr", style ? `style="${style}"` : "", cells);
+      const tbl = (rows) => tag("table", "", rows);
 
-        let initSum = 0;
-        const fundRowsHtml = state.funds.map((f, i) => {
-          const firstPop = computed.find(r => typeof r.values[f.id] === "number" && !Number.isNaN(r.values[f.id]));
-          const initVal = firstPop ? Number(firstPop.values[f.id]) : (Number(f.initial) || 0);
-          const curr = Number(latest.values[f.id]) || 0;
-          const diff = curr - initVal;
-          const share = latestTotal > 0 ? ((curr / latestTotal) * 100).toFixed(1) + "%" : "0.0%";
-          initSum += initVal;
-          const trackName = (state.tracks[f.id] && state.tracks[f.id].name) ? state.tracks[f.id].name : "—";
-          const bg = i % 2 === 1 ? "background-color:#f8fafc;" : "";
-          return row(`style="${bg}"`,
-            cell(`style="font-weight:bold;"`, escHtml(f.name)) +
-            cell("", f.providerUrl ? el("a", `href="${escAttr(f.providerUrl)}"`, escHtml(f.provider)) : escHtml(f.provider)) +
-            cell("", escHtml(trackName)) +
-            cell("", escHtml(f.feeAcc)) +
-            cell("", escHtml(f.feeDep)) +
-            cell(`style="text-align:right;"`, fmtNum(initVal)) +
-            cell(`style="text-align:right;font-weight:bold;color:#1e3a5f;"`, fmtNum(curr)) +
-            cell(`style="text-align:right;${diffStyle(diff)}"`, fmtDiff(diff)) +
-            cell(`style="text-align:right;"`, share)
-          );
-        }).join("");
+      let initSum = 0;
+      const fundRowsHtml = state.funds.map((f, i) => {
+        const firstPop = computed.find(r => typeof r.values[f.id] === "number" && !Number.isNaN(r.values[f.id]));
+        const initVal = firstPop ? Number(firstPop.values[f.id]) : (Number(f.initial) || 0);
+        const curr = Number(latest.values[f.id]) || 0;
+        const diff = curr - initVal;
+        const share = latestTotal > 0 ? ((curr / latestTotal) * 100).toFixed(1) + "%" : "0.0%";
+        initSum += initVal;
+        const trackName = (state.tracks[f.id] && state.tracks[f.id].name) ? state.tracks[f.id].name : "—";
+        const bg = i % 2 === 1 ? "background-color:#f8fafc;" : "";
+        const provCell = f.providerUrl
+          ? tag("a", `href="${escAttr(f.providerUrl)}"`, escHtml(f.provider))
+          : escHtml(f.provider);
+        return row([
+          cell(escHtml(f.name), "font-weight:bold;"),
+          cell(provCell),
+          cell(escHtml(trackName)),
+          cell(escHtml(f.feeAcc)),
+          cell(escHtml(f.feeDep)),
+          cell(fmtNum(initVal), "text-align:right;"),
+          cell(fmtNum(curr), "text-align:right;font-weight:bold;color:#1e3a5f;"),
+          cell(fmtDiff(diff), `text-align:right;${diffStyle(diff)}`),
+          cell(share, "text-align:right;")
+        ].join(""), bg);
+      }).join("");
 
-        const monthlyRowsHtml = computed.map((r, idx) => {
-          const bg = idx % 2 === 1 ? "background-color:#f8fafc;" : "";
-          return row(`style="${bg}"`,
-            cell(`style="text-align:center;font-weight:bold;"`, String(r.year)) +
-            cell(`style="font-weight:bold;"`, escHtml(r.monthName)) +
-            state.funds.map(f => cell(`style="text-align:right;"`, fmtNum(r.values[f.id]))).join("") +
-            cell(`style="text-align:right;font-weight:bold;background-color:#f1f5f9;color:#1e3a5f;"`, fmtNum(r.total)) +
-            cell(`style="text-align:right;${diffStyle(r.momDiff)}"`, fmtDiff(r.momDiff)) +
-            cell(`style="text-align:right;${diffStyle(r.momPct)}"`, r.momPct !== null ? formatPct(r.momPct) : "") +
-            cell(`style="text-align:right;${diffStyle(r.cumDiff)}"`, fmtDiff(r.cumDiff)) +
-            cell("", escHtml(r.note))
-          );
-        }).join("");
+      const monthlyRowsHtml = computed.map((r, idx) => {
+        const bg = idx % 2 === 1 ? "background-color:#f8fafc;" : "";
+        const fundCells = state.funds.map(f => cell(fmtNum(r.values[f.id]), "text-align:right;")).join("");
+        return row([
+          cell(r.year, "text-align:center;font-weight:bold;"),
+          cell(escHtml(r.monthName), "font-weight:bold;"),
+          fundCells,
+          cell(fmtNum(r.total), "text-align:right;font-weight:bold;background-color:#f1f5f9;color:#1e3a5f;"),
+          cell(fmtDiff(r.momDiff), `text-align:right;${diffStyle(r.momDiff)}`),
+          cell(r.momPct !== null ? formatPct(r.momPct) : "", `text-align:right;${diffStyle(r.momPct)}`),
+          cell(fmtDiff(r.cumDiff), `text-align:right;${diffStyle(r.cumDiff)}`),
+          cell(escHtml(r.note))
+        ].join(""), bg);
+      }).join("");
 
-        const agentsHtmlRows = (state.agents || []).map((ag, idx) => {
-          const bg = idx % 2 === 1 ? "background-color:#f8fafc;" : "";
-          return row(`style="${bg}"`,
-            cell(`style="font-weight:bold;"`, escHtml(ag.role)) +
-            cell("", escHtml(ag.name)) +
-            cell("", escHtml(ag.agency)) +
-            cell("", escHtml(ag.phone)) +
-            cell("", escHtml(ag.email)) +
-            cell("", escHtml(ag.notes))
-          );
-        }).join("");
+      const agentsHtmlRows = state.agents.map((ag, idx) => {
+        const bg = idx % 2 === 1 ? "background-color:#f8fafc;" : "";
+        return row([
+          cell(escHtml(ag.role), "font-weight:bold;"),
+          cell(escHtml(ag.name)),
+          cell(escHtml(ag.agency)),
+          cell(escHtml(ag.phone)),
+          cell(escHtml(ag.email)),
+          cell(escHtml(ag.notes))
+        ].join(""), bg);
+      }).join("");
 
-        const summaryTbl = tbl("",
-          row("", cell(`colspan="9" class="banner"`, "ניהול השקעות — סיכום תיק ופרטי סוכנים (גרסה 3.2)")) +
-          row("",
-            cell(`colspan="2" class="hdr2"`, 'סה"כ צבירה נוכחית') +
-            cell(`style="font-weight:bold;"`, fmtNum(latestTotal)) +
-            cell(`colspan="2" class="hdr2"`, "רווח/הפסד חודש אחרון") +
-            cell(`style="${diffStyle(latest.momDiff)}"`, fmtDiff(latest.momDiff)) +
-            cell(`colspan="2" class="hdr2"`, "יעד פיננסי") +
-            cell(`style="font-weight:bold;"`, fmtNum(state.goalAmount))
-          )
-        );
+      const cssText = [
+        "body { font-family: Arial, sans-serif; font-size: 14pt; direction: rtl; }",
+        "table { border-collapse: collapse; margin-bottom: 24px; }",
+        "th, td { border: 1px solid #cbd5e1; padding: 6px 10px; font-family: Arial, sans-serif; font-size: 12pt; }",
+        ".banner { background-color: #1e3a5f; color: #ffffff; font-size: 16pt; font-weight: bold; text-align: center; padding: 10px; }",
+        ".hdr { background-color: #1e3a5f; color: #ffffff; font-weight: bold; text-align: center; }",
+        ".hdr2 { background-color: #2b6cb0; color: #ffffff; font-weight: bold; text-align: center; }",
+        ".tot { background-color: #e2e8f0; font-weight: bold; border-top: 2px solid #1e3a5f; }"
+      ].join(" ");
 
-        const fundsTbl = tbl("",
-          row("", cell(`colspan="9" class="banner"`, "פירוט קופות, מסלולים ודמי ניהול")) +
-          row("",
-            thCell(`class="hdr"`, "שם הקופה") +
-            thCell(`class="hdr"`, "גוף מנהל") +
-            thCell(`class="hdr"`, "מסלול השקעה") +
-            thCell(`class="hdr"`, "דמי ניהול מצבירה") +
-            thCell(`class="hdr"`, "דמי ניהול מהפקדה") +
-            thCell(`class="hdr"`, "יתרה התחלתית") +
-            thCell(`class="hdr"`, "יתרה עדכנית") +
-            thCell(`class="hdr"`, "שינוי מצטבר") +
-            thCell(`class="hdr"`, "חלק מהתיק")
-          ) +
-          fundRowsHtml +
-          row(`class="tot"`,
-            cell(`colspan="5"`, 'סה"כ תיק השקעות') +
-            cell(`style="text-align:right;"`, fmtNum(initSum)) +
-            cell(`style="text-align:right;"`, fmtNum(latestTotal)) +
-            cell(`style="text-align:right;${diffStyle(latestTotal - initSum)}"`, fmtDiff(latestTotal - initSum)) +
-            cell(`style="text-align:right;"`, "100.0%")
-          )
-        );
+      const summaryTable = tbl([
+        row(tag("td", 'colspan="9" class="banner"', "ניהול השקעות — סיכום תיק ופרטי סוכנים (גרסה 3.4)")),
+        row([
+          tag("td", 'colspan="2" class="hdr2"', 'סה"כ צבירה נוכחית'),
+          cell(fmtNum(latestTotal), "font-weight:bold;"),
+          tag("td", 'colspan="2" class="hdr2"', "רווח/הפסד חודש אחרון"),
+          cell(fmtDiff(latest.momDiff), diffStyle(latest.momDiff)),
+          tag("td", 'colspan="2" class="hdr2"', "יעד פיננסי"),
+          cell(fmtNum(state.goalAmount), "font-weight:bold;")
+        ].join(""))
+      ].join(""));
 
-        const monthlyTbl = tbl("",
-          row("", cell(`colspan="${state.funds.length + 7}" class="banner"`, "מעקב חודשי מלא ורווח / הפסד")) +
-          row("",
-            thCell(`class="hdr"`, "שנה") +
-            thCell(`class="hdr"`, "חודש") +
-            state.funds.map(f => thCell(`class="hdr"`, escHtml(f.name))).join("") +
-            thCell(`class="hdr2"`, 'סה"כ תיק') +
-            thCell(`class="hdr2"`, "רווח/הפסד מחודש קודם") +
-            thCell(`class="hdr2"`, "שינוי (%)") +
-            thCell(`class="hdr2"`, "מצטבר (₪)") +
-            thCell(`class="hdr"`, "הערות")
-          ) +
-          monthlyRowsHtml
-        );
+      const fundsTable = tbl([
+        row(tag("td", 'colspan="9" class="banner"', "פירוט קופות, מסלולים ודמי ניהול")),
+        row([
+          thCell("שם הקופה", "hdr"), thCell("גוף מנהל", "hdr"), thCell("מסלול השקעה", "hdr"),
+          thCell("דמי ניהול מצבירה", "hdr"), thCell("דמי ניהול מהפקדה", "hdr"),
+          thCell("יתרה התחלתית", "hdr"), thCell("יתרה עדכנית", "hdr"),
+          thCell("שינוי מצטבר", "hdr"), thCell("חלק מהתיק", "hdr")
+        ].join("")),
+        fundRowsHtml,
+        tag("tr", 'class="tot"', [
+          tag("td", 'colspan="5"', 'סה"כ תיק השקעות'),
+          cell(fmtNum(initSum), "text-align:right;"),
+          cell(fmtNum(latestTotal), "text-align:right;"),
+          cell(fmtDiff(latestTotal - initSum), `text-align:right;${diffStyle(latestTotal - initSum)}`),
+          cell("100.0%", "text-align:right;")
+        ].join(""))
+      ].join(""));
 
-        const agentsTbl = tbl("",
-          row("", cell(`colspan="6" class="banner"`, "פרטי סוכנים ואנשי קשר")) +
-          row("",
-            thCell(`class="hdr"`, "תחום") +
-            thCell(`class="hdr"`, "שם הסוכן") +
-            thCell(`class="hdr"`, "סוכנות / חברה") +
-            thCell(`class="hdr"`, "טלפון") +
-            thCell(`class="hdr"`, "אימייל") +
-            thCell(`class="hdr"`, "הערות")
-          ) +
-          agentsHtmlRows
-        );
+      const monthlyTable = tbl([
+        row(tag("td", `colspan="${state.funds.length + 7}" class="banner"`, "מעקב חודשי מלא ורווח / הפסד")),
+        row([
+          thCell("שנה", "hdr"), thCell("חודש", "hdr"),
+          state.funds.map(f => thCell(escHtml(f.name), "hdr")).join(""),
+          thCell('סה"כ תיק', "hdr2"), thCell("רווח/הפסד מחודש קודם", "hdr2"),
+          thCell("שינוי (%)", "hdr2"), thCell("מצטבר (₪)", "hdr2"), thCell("הערות", "hdr")
+        ].join("")),
+        monthlyRowsHtml
+      ].join(""));
 
-        const cssRules = "body{font-family:Arial,sans-serif;font-size:14pt;direction:rtl;}table{border-collapse:collapse;margin-bottom:24px;}th,td{border:1px solid #cbd5e1;padding:6px 10px;font-size:12pt;}.banner{background-color:#1e3a5f;color:#ffffff;font-size:16pt;font-weight:bold;text-align:center;padding:10px;}.hdr{background-color:#1e3a5f;color:#ffffff;font-weight:bold;text-align:center;}.hdr2{background-color:#2b6cb0;color:#ffffff;font-weight:bold;text-align:center;}.tot{background-color:#e2e8f0;font-weight:bold;border-top:2px solid #1e3a5f;}";
-        const htmlDoc = "<!DOCTYPE html><html dir=\"rtl\" lang=\"he\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:x=\"urn:schemas-microsoft-com:office:excel\"><head><meta charset=\"UTF-8\" />" + el("style", "", cssRules) + "</head><body>" + summaryTbl + fundsTbl + monthlyTbl + agentsTbl + "</body></html>";
+      const agentsTable = tbl([
+        row(tag("td", 'colspan="6" class="banner"', "פרטי סוכנים ואנשי קשר")),
+        row([
+          thCell("תחום", "hdr"), thCell("שם הסוכן", "hdr"), thCell("סוכנות / חברה", "hdr"),
+          thCell("טלפון", "hdr"), thCell("אימייל", "hdr"), thCell("הערות", "hdr")
+        ].join("")),
+        agentsHtmlRows
+      ].join(""));
 
-        const blob = new Blob(["\uFEFF" + htmlDoc], { type: "application/vnd.ms-excel;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "ניהול_השקעות_v3.2.xls";
-        a.click();
-        URL.revokeObjectURL(url);
-        showToast("קובץ אקסל מעוצב עם כל הנתונים יוצא בהצלחה!");
-      } catch (err) {
-        showToast("אירעה שגיאה בייצוא לאקסל");
-      }
+      const htmlDoc = "<!DOCTYPE html>" + tag(
+        "html",
+        'dir="rtl" lang="he" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"',
+        tag("head", "", '<meta charset="UTF-8" />' + tag("style", "", cssText)) +
+        tag("body", "", summaryTable + fundsTable + monthlyTable + agentsTable)
+      );
+
+      const blob = new Blob(["\uFEFF" + htmlDoc], { type: "application/vnd.ms-excel;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "ניהול_השקעות_v3.4.xls";
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast("קובץ אקסל מעוצב עם כל הנתונים יוצא בהצלחה!");
     });
 
     const AGENTS_STORAGE_KEY = "personal_savings_agents_v5";
     const DEFAULT_AGENTS = [
       { role: "סוכן פנסיוני (פנסיה ופוליסת חיסכון)", name: "אלון בן שהם", agency: "סוכן פנסיוני", phone: "+972 58-790-8244", email: "", notes: "" },
-      { role: "סוכן קרן השתלמות", name: "מיטל", agency: "מבטח סיימון", phone: "052-5993485", email: "", notes: "" },
-      { role: "סוכן ילין לפידות (גמל להשקעה)", name: "Boaz", agency: "Yalin Lapidot", phone: "052-8223699", email: "", notes: "" }
+      { role: "סוכן קרן השתלמות הראל", name: "מיטל", agency: "מבטח סיימון", phone: "052-5993485", email: "", notes: "" },
+      { role: "סוכן ילין לפידות (גמל להשקעה)", name: "בועז", agency: "ילין לפידות", phone: "052-8223699", email: "", notes: "" }
     ];
 
     function loadAgents() {
@@ -2127,6 +2192,7 @@
           window._agentBadgeTimer = setTimeout(() => badge.classList.add("hidden"), 2000);
         }
       } catch (e) {}
+      scheduleCloudPush();
     }
 
     state.agents = loadAgents();
@@ -2150,14 +2216,14 @@
         const waHref = intl ? `href="https://wa.me/${intl}"` : "";
         const disabledCls = intl ? "" : "opacity-40 pointer-events-none";
         const removeBtn = state.agents.length > 1
-          ? `<button type="button" data-remove-agent="${idx}" class="remove-agent-btn w-7 h-7 flat-pill bg-slate-200/70 hover:bg-red-100 text-xs font-bold text-slate-500 hover:text-red-600 flex items-center justify-center transition" title="הסר סוכן">✕</button>`
+          ? `<button type="button" data-remove-agent="${idx}" class="remove-agent-btn w-7 h-7 flat-pill bg-white hover:bg-red-50 text-xs font-bold text-slate-400 hover:text-red-600 border border-slate-200 flex items-center justify-center transition" title="הסר סוכן">✕</button>`
           : "";
 
         html += `
-          <div class="flat-tonal-card p-4 space-y-3">
-            <div class="flex items-center justify-between gap-2 border-b border-slate-200 pb-2">
+          <div class="flat-tonal-card p-4 sm:p-5 space-y-3">
+            <div class="flex items-center justify-between gap-2 border-b border-slate-200 pb-2.5">
               <input type="text" data-ag-idx="${idx}" data-ag-field="role" value="${escAttr(ag.role)}" placeholder="תחום / תיאור (לדוגמה: סוכן ביטוח)..."
-                class="agent-dyn-input w-full text-sm font-bold text-[#1e3a5f] bg-transparent outline-none focus:bg-white focus:px-2.5 focus:py-1 rounded-lg transition" />
+                class="agent-dyn-input w-full text-sm font-bold text-[#1e3a5f] bg-transparent outline-none focus:bg-white focus:px-2.5 py-1 rounded-xl transition" />
               ${removeBtn}
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -2174,12 +2240,12 @@
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">טלפון</label>
                 <input type="tel" dir="ltr" data-ag-idx="${idx}" data-ag-field="phone" value="${escAttr(ag.phone)}" placeholder="050-0000000"
-                  class="agent-dyn-input flat-input w-full px-3 py-2 text-sm text-left" />
+                  class="agent-dyn-input flat-input w-full px-3 py-2 text-sm text-right tabular-nums" />
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">אימייל</label>
                 <input type="email" dir="ltr" data-ag-idx="${idx}" data-ag-field="email" value="${escAttr(ag.email)}" placeholder="agent@example.com"
-                  class="agent-dyn-input flat-input w-full px-3 py-2 text-sm text-left" />
+                  class="agent-dyn-input flat-input w-full px-3 py-2 text-sm text-right" />
               </div>
               <div class="sm:col-span-2">
                 <label class="block text-xs font-semibold text-slate-600 mb-1">הערות / מספרי חשבון</label>
@@ -2235,7 +2301,7 @@
           const removedName = state.agents[idx]?.name || state.agents[idx]?.role || "סוכן";
           state.agents.splice(idx, 1);
           saveAgents();
-          recordAction(`הסרת סוכן (${removedName})`, beforeSnap);
+          recordAction(`הסרת סוכן (${removedName})`, beforeSnap, { offerToastUndo: true });
           renderAgents();
           showToast(`הסוכן "${removedName}" הוסר`, { showUndo: true });
         });
@@ -2246,7 +2312,7 @@
       const beforeSnap = cloneSnapshot();
       state.agents.push({ role: "סוכן נוסף", name: "", agency: "", phone: "", email: "", notes: "" });
       saveAgents();
-      recordAction("הוספת כרטיס סוכן", beforeSnap);
+      recordAction("הוספת כרטיס סוכן", beforeSnap, { offerToastUndo: true });
       renderAgents();
       showToast("נוסף כרטיס סוכן חדש", { showUndo: true });
     });
@@ -2326,7 +2392,7 @@
       const eventLines = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
-        "PRODID:-//Personal Investment Tracker//v2.8//HE",
+        "PRODID:-//Personal Investment Tracker//v3.4//HE",
         "BEGIN:VEVENT",
         `UID:savings-reminder-${dateStr}-${pad(hh)}${pad(mm)}-${Date.now()}@investments.local`,
         `DTSTAMP:${dtStamp}`,
@@ -2376,7 +2442,7 @@
           actionHtml = `
             <div class="inline-flex items-center gap-1.5">
               <button type="button" data-do-del="${escAttr(f.id)}" class="px-3 py-1 flat-pill text-xs font-semibold bg-red-600 text-white hover:bg-red-700 transition">מחק סופית</button>
-              <button type="button" data-cancel-del="${escAttr(f.id)}" class="px-2.5 py-1 flat-pill text-xs font-semibold bg-slate-200 text-slate-700 hover:bg-slate-300 transition">ביטול</button>
+              <button type="button" data-cancel-del="${escAttr(f.id)}" class="px-3 py-1 flat-pill text-xs font-semibold bg-slate-200 text-slate-700 hover:bg-slate-300 transition">ביטול</button>
             </div>`;
         } else {
           actionHtml = `<button type="button" data-ask-del="${escAttr(f.id)}" class="px-3 py-1 flat-pill text-xs font-semibold text-red-600 hover:bg-red-50 border border-red-200 transition">מחק</button>`;
@@ -2417,7 +2483,7 @@
           saveFunds();
           saveState();
           saveTracks();
-          recordAction(`מחיקת קופה (${removedObj ? removedObj.name : ""})`, beforeSnap);
+          recordAction(`מחיקת קופה (${removedObj ? removedObj.name : ""})`, beforeSnap, { offerToastUndo: true });
           renderManageFundsList();
           renderAll();
           showToast(`הקופה "${removedObj ? removedObj.name : ""}" נמחקה`, { showUndo: true });
@@ -2461,7 +2527,7 @@
       state.rows.forEach(r => { r.values[id] = null; });
       saveFunds();
       saveState();
-      recordAction(`הוספת קופה (${name})`, beforeSnap);
+      recordAction(`הוספת קופה (${name})`, beforeSnap, { offerToastUndo: true });
       document.getElementById("newFundName").value = "";
       document.getElementById("newFundProvider").value = "";
       document.getElementById("newFundUrl").value = "";
@@ -2471,6 +2537,224 @@
       renderAll();
       showToast(`הקופה "${name}" נוספה בהצלחה`, { showUndo: true });
     });
+
+    // Cloud Real-Time Auto-Sync (Firebase Realtime Database REST API)
+    const CLOUD_CONFIG_KEY = "personal_savings_cloud_cfg_v1";
+    const CLOUD_META_KEY = "personal_savings_cloud_meta_v1";
+    let cloudPushTimer = null;
+    let isPullingFromCloud = false;
+
+    function loadCloudConfig() {
+      try {
+        const raw = localStorage.getItem(CLOUD_CONFIG_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.dbUrl && parsed.syncKey) {
+            return {
+              dbUrl: String(parsed.dbUrl).trim().replace(/\/+$/, ""),
+              syncKey: String(parsed.syncKey).trim()
+            };
+          }
+        }
+      } catch (e) {}
+      return { dbUrl: "", syncKey: "" };
+    }
+
+    function saveCloudConfig(cfg) {
+      try { localStorage.setItem(CLOUD_CONFIG_KEY, JSON.stringify(cfg)); } catch (e) {}
+    }
+
+    function getLocalUpdatedAt() {
+      try {
+        const raw = localStorage.getItem(CLOUD_META_KEY);
+        return raw ? Number(raw) || 0 : 0;
+      } catch (e) { return 0; }
+    }
+
+    function setLocalUpdatedAt(ts) {
+      try { localStorage.setItem(CLOUD_META_KEY, String(ts)); } catch (e) {}
+    }
+
+    function sanitizeSyncKey(key) {
+      return String(key || "").replace(/[^a-zA-Z0-9_-]/g, "_");
+    }
+
+    function getCloudEndpoint() {
+      const cfg = loadCloudConfig();
+      if (!cfg.dbUrl || !cfg.syncKey) return null;
+      return `${cfg.dbUrl}/savemoney_sync/${sanitizeSyncKey(cfg.syncKey)}.json`;
+    }
+
+    function updateCloudBadge(mode, detail = "") {
+      const dot = document.getElementById("cloudStatusDot");
+      const label = document.getElementById("cloudStatusLabel");
+      const modalText = document.getElementById("cloudLastSyncText");
+      if (!dot || !label) return;
+      if (mode === "unconfigured") {
+        dot.className = "w-2 h-2 rounded-full bg-slate-400";
+        label.textContent = "מקומי בלבד";
+        if (modalText) modalText.textContent = "סטטוס: לא מחובר לענן";
+      } else if (mode === "syncing") {
+        dot.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
+        label.textContent = "מסנכרן...";
+      } else if (mode === "synced") {
+        dot.className = "w-2 h-2 rounded-full bg-emerald-400";
+        label.textContent = "מסונכרן בענן";
+        if (modalText) modalText.textContent = `סטטוס: מסונכרן בענן ${detail ? `(${detail})` : ""}`;
+      } else if (mode === "error") {
+        dot.className = "w-2 h-2 rounded-full bg-red-400";
+        label.textContent = "שגיאת סנכרון";
+        if (modalText) modalText.textContent = `סטטוס: שגיאת חיבור לענן ${detail ? `(${detail})` : ""}`;
+      }
+    }
+
+    async function pushToCloud(force = false) {
+      if (isPullingFromCloud) return;
+      const endpoint = getCloudEndpoint();
+      if (!endpoint) return;
+      const now = Date.now();
+      setLocalUpdatedAt(now);
+      updateCloudBadge("syncing");
+      try {
+        const payload = {
+          updatedAt: now,
+          funds: state.funds,
+          rows: state.rows,
+          tracks: state.tracks,
+          goalAmount: state.goalAmount,
+          agents: state.agents
+        };
+        const res = await fetch(endpoint, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const timeStr = new Date(now).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+        updateCloudBadge("synced", timeStr);
+      } catch (err) {
+        updateCloudBadge("error", err.message || "");
+      }
+    }
+
+    function scheduleCloudPush() {
+      if (isPullingFromCloud || !getCloudEndpoint()) return;
+      setLocalUpdatedAt(Date.now());
+      clearTimeout(cloudPushTimer);
+      cloudPushTimer = setTimeout(() => { pushToCloud(); }, 900);
+    }
+
+    async function pullFromCloud(silent = true) {
+      const endpoint = getCloudEndpoint();
+      if (!endpoint) {
+        updateCloudBadge("unconfigured");
+        return;
+      }
+      updateCloudBadge("syncing");
+      try {
+        const res = await fetch(endpoint, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const remote = await res.json();
+        if (!remote || typeof remote !== "object" || !remote.updatedAt) {
+          await pushToCloud(true);
+          return;
+        }
+        const localTs = getLocalUpdatedAt();
+        if (Number(remote.updatedAt) > localTs) {
+          isPullingFromCloud = true;
+          try {
+            if (Array.isArray(remote.funds) && remote.funds.length > 0) {
+              state.funds = remote.funds;
+              localStorage.setItem(FUNDS_STORAGE_KEY, JSON.stringify(state.funds));
+            }
+            if (Array.isArray(remote.rows) && remote.rows.length > 0) {
+              state.rows = remote.rows;
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(state.rows));
+            }
+            if (remote.tracks && typeof remote.tracks === "object") {
+              state.tracks = remote.tracks;
+              localStorage.setItem(TRACKS_STORAGE_KEY, JSON.stringify(state.tracks));
+            }
+            if (typeof remote.goalAmount === "number" && remote.goalAmount > 0) {
+              state.goalAmount = remote.goalAmount;
+              localStorage.setItem(GOAL_STORAGE_KEY, String(state.goalAmount));
+              const gInp = document.getElementById("goalAmountInput");
+              if (gInp) gInp.value = formatCommaInt(state.goalAmount);
+            }
+            if (Array.isArray(remote.agents) && remote.agents.length > 0) {
+              state.agents = remote.agents;
+              localStorage.setItem(AGENTS_STORAGE_KEY, JSON.stringify(state.agents));
+              renderAgents();
+            }
+            setLocalUpdatedAt(Number(remote.updatedAt));
+            initQuickEntryTarget(true);
+            renderAll();
+          } finally {
+            isPullingFromCloud = false;
+          }
+          if (!silent) showToast("הנתונים עודכנו מהענן!");
+        } else if (localTs > Number(remote.updatedAt)) {
+          await pushToCloud(true);
+        } else if (!silent) {
+          showToast("הנתונים כבר מעודכנים מול הענן");
+        }
+        const timeStr = new Date(Math.max(Number(remote.updatedAt), localTs)).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+        updateCloudBadge("synced", timeStr);
+      } catch (err) {
+        updateCloudBadge("error", err.message || "");
+        if (!silent) showToast("שגיאה בסנכרון מול הענן — בדוק את הכתובת והרשאות Firebase");
+      }
+    }
+
+    const cloudModal = document.getElementById("cloudSyncModal");
+    function openCloudSyncModal() {
+      const cfg = loadCloudConfig();
+      document.getElementById("cloudDbUrlInput").value = cfg.dbUrl || "";
+      document.getElementById("cloudSyncKeyInput").value = cfg.syncKey || "";
+      cloudModal.classList.remove("hidden");
+      if (window.lucide) lucide.createIcons();
+    }
+
+    document.getElementById("cloudStatusPill").addEventListener("click", openCloudSyncModal);
+    document.getElementById("btnCloudSyncMenu").addEventListener("click", openCloudSyncModal);
+    document.getElementById("btnCloseCloudModal").addEventListener("click", () => cloudModal.classList.add("hidden"));
+
+    document.getElementById("btnSaveCloudConfig").addEventListener("click", async () => {
+      let dbUrl = document.getElementById("cloudDbUrlInput").value.trim().replace(/\/+$/, "");
+      const syncKey = document.getElementById("cloudSyncKeyInput").value.trim();
+      if (!dbUrl || !syncKey) {
+        showToast("יש להזין כתובת Database URL וקוד סנכרון אישי");
+        return;
+      }
+      if (!/^https?:\/\//i.test(dbUrl)) dbUrl = "https://" + dbUrl;
+      saveCloudConfig({ dbUrl, syncKey });
+      cloudModal.classList.add("hidden");
+      await pullFromCloud(false);
+    });
+
+    document.getElementById("btnPullCloudNow").addEventListener("click", async () => {
+      await pullFromCloud(false);
+    });
+
+    document.getElementById("btnDisconnectCloud").addEventListener("click", () => {
+      try { localStorage.removeItem(CLOUD_CONFIG_KEY); } catch (e) {}
+      document.getElementById("cloudDbUrlInput").value = "";
+      document.getElementById("cloudSyncKeyInput").value = "";
+      updateCloudBadge("unconfigured");
+      cloudModal.classList.add("hidden");
+      showToast("סנכרון הענן נותק — הנתונים נשמרים מקומית");
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && getCloudEndpoint()) {
+        pullFromCloud(true);
+      }
+    });
+    setInterval(() => {
+      if (!document.hidden && getCloudEndpoint()) {
+        pullFromCloud(true);
+      }
+    }, 15000);
 
     // Close modals on backdrop click or Escape key + Undo/Redo keyboard shortcuts
     document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
@@ -2508,6 +2792,11 @@
     renderAgents();
     renderAll();
     updateHistoryButtons();
+    if (getCloudEndpoint()) {
+      pullFromCloud(true);
+    } else {
+      updateCloudBadge("unconfigured");
+    }
   </script>
 </body>
 </html>
