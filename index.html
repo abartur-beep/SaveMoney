@@ -2539,6 +2539,10 @@
     });
 
     // Cloud Real-Time Auto-Sync (Firebase Realtime Database REST API)
+    const DEFAULT_CLOUD_CONFIG = {
+      dbUrl: "https://savemoney-e07a5-default-rtdb.asia-southeast1.firebasedatabase.app",
+      syncKey: "artur-savemoney-2026"
+    };
     const CLOUD_CONFIG_KEY = "personal_savings_cloud_cfg_v1";
     const CLOUD_META_KEY = "personal_savings_cloud_meta_v1";
     let cloudPushTimer = null;
@@ -2557,7 +2561,7 @@
           }
         }
       } catch (e) {}
-      return { dbUrl: "", syncKey: "" };
+      return { ...DEFAULT_CLOUD_CONFIG };
     }
 
     function saveCloudConfig(cfg) {
@@ -2744,12 +2748,8 @@
       await pullFromCloud(false, true);
     });
 
-    document.getElementById("btnPullCloudNow").addEventListener("click", async () => {
-      await pullFromCloud(false);
-    });
-
     document.getElementById("btnDisconnectCloud").addEventListener("click", () => {
-      try { localStorage.removeItem(CLOUD_CONFIG_KEY); } catch (e) {}
+      saveCloudConfig({ dbUrl: "", syncKey: "" });
       document.getElementById("cloudDbUrlInput").value = "";
       document.getElementById("cloudSyncKeyInput").value = "";
       updateCloudBadge("unconfigured");
