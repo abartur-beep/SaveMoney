@@ -7,7 +7,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="ניהול השקעות" />
   <meta name="theme-color" content="#1e3a5f" />
-  <title>ניהול השקעות — גרסה 3.8</title>
+  <title>ניהול השקעות — גרסה 4.0</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -252,8 +252,8 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
         <div class="flex items-center gap-2.5 flex-wrap">
-          <h1 class="text-xl sm:text-2xl font-bold tracking-tight">ניהול השקעות — גרסה 3.8</h1>
-          <span class="px-3 py-0.5 flat-pill text-xs font-semibold bg-[#2b6cb0] text-white">גרסה 3.8</span>
+          <h1 class="text-xl sm:text-2xl font-bold tracking-tight">ניהול השקעות — גרסה 4.0</h1>
+          <span class="px-3 py-0.5 flat-pill text-xs font-semibold bg-[#2b6cb0] text-white">גרסה 4.0</span>
           <button id="cloudStatusPill" type="button" title="הגדרות סנכרון ענן אוטומטי" class="inline-flex items-center gap-1.5 px-3 py-0.5 flat-pill text-xs font-semibold bg-[#162c49] hover:bg-[#235891] text-slate-200 border border-white/15 transition">
             <span id="cloudStatusDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
             <span id="cloudStatusLabel">מקומי בלבד</span>
@@ -528,10 +528,14 @@
       <!-- Compact Quick Entry Card -->
       <div id="quickEntryCard" class="flat-card p-4 sm:p-5 space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-200">
-          <div class="flex items-center gap-2.5">
+          <div class="flex items-center gap-2.5 flex-wrap">
             <span class="p-2 rounded-2xl bg-blue-50 text-[#1e3a5f]"><i data-lucide="zap" class="w-4 h-4"></i></span>
             <h2 class="text-sm sm:text-base font-bold text-[#1e3a5f]">הזנה מהירה לחודש</h2>
             <span class="hidden md:inline text-xs text-slate-500">— בחר חודש ושנה ועדכן יתרות</span>
+            <button id="btnQuickLockToggle" type="button" class="hidden inline-flex items-center gap-1.5 px-3 py-1 flat-pill text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100 transition">
+              <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+              <span>חודש זה נעול — לחץ לפתיחה לעריכה</span>
+            </button>
           </div>
           <div class="flex items-center gap-2">
             <select id="qeMonth" aria-label="בחר חודש" class="flat-input px-3 py-1.5 text-xs font-semibold text-slate-800"></select>
@@ -834,17 +838,29 @@
           values = { pension_comp: 791791, pension_gen: 25672, savings_pol: 826009, hishtalmut: 440403, gemel_inv: 186459 };
           note = "יתרת אוקטובר 2026";
         }
+        const hasInitialData = Object.values(values).some(v => typeof v === "number" && !Number.isNaN(v));
         rows.push({
           year: y,
           monthIndex: m,
           monthName: HEBREW_MONTHS[m],
           values,
-          note
+          note,
+          locked: hasInitialData
         });
         m++;
         if (m === 12) { m = 0; y++; }
       }
       return rows;
+    }
+
+    function normalizeRowObject(r) {
+      const vals = (r && r.values && typeof r.values === "object") ? r.values : {};
+      const hasAny = Object.values(vals).some(v => typeof v === "number" && !Number.isNaN(v));
+      return {
+        ...r,
+        values: vals,
+        locked: typeof r?.locked === "boolean" ? r.locked : hasAny
+      };
     }
 
     function loadState() {
@@ -853,10 +869,7 @@
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed.map(r => ({
-              ...r,
-              values: (r && r.values && typeof r.values === "object") ? r.values : {}
-            }));
+            return parsed.map(normalizeRowObject);
           }
         }
       } catch (e) {}
@@ -1305,28 +1318,43 @@
 
       const existingRow = state.rows.find(r => r.year === state.qeSelectedYear && r.monthIndex === state.qeSelectedMonth);
       const existingVals = (existingRow && existingRow.values && typeof existingRow.values === "object") ? existingRow.values : {};
+      const isLocked = Boolean(existingRow && existingRow.locked);
+
+      const quickLockBtn = document.getElementById("btnQuickLockToggle");
+      if (quickLockBtn) {
+        quickLockBtn.classList.toggle("hidden", !isLocked);
+      }
 
       grid.innerHTML = state.funds.map(f => {
         const v = existingVals[f.id];
         const displayVal = (typeof v === "number" && !Number.isNaN(v)) ? formatCommaInt(v) : "";
         return `
-          <div class="flat-tonal-card px-3 py-2">
+          <div class="flat-tonal-card px-3 py-2 ${isLocked ? "opacity-75" : ""}">
             <label class="block text-[11px] font-semibold text-slate-700 mb-1 truncate" title="${escAttr(f.name)}">${escHtml(f.name)}</label>
             <div class="relative">
-              <input type="text" inputmode="numeric" dir="ltr" data-qe-fund="${escAttr(f.id)}" value="${displayVal}" placeholder="יתרה..."
-                class="qe-fund-input flat-input w-full pl-6 pr-2.5 py-1.5 text-right text-xs font-bold tabular-nums" />
+              <input type="text" inputmode="numeric" dir="ltr" data-qe-fund="${escAttr(f.id)}" value="${displayVal}" placeholder="יתרה..." ${isLocked ? "disabled" : ""}
+                class="qe-fund-input flat-input w-full pl-6 pr-2.5 py-1.5 text-right text-xs font-bold tabular-nums ${isLocked ? "bg-slate-100 text-slate-500 cursor-not-allowed" : ""}" />
               <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] font-bold text-slate-400 pointer-events-none">₪</span>
             </div>
           </div>`;
       }).join("");
 
       noteEl.value = existingRow ? (existingRow.note || "") : "";
+      noteEl.disabled = isLocked;
+      noteEl.classList.toggle("bg-slate-100", isLocked);
+      noteEl.classList.toggle("cursor-not-allowed", isLocked);
+
+      const copyPrevBtn = document.getElementById("btnQuickCopyPrev");
+      const quickSaveBtn = document.getElementById("btnQuickSave");
+      if (copyPrevBtn) copyPrevBtn.disabled = isLocked;
+      if (quickSaveBtn) quickSaveBtn.disabled = isLocked;
 
       grid.querySelectorAll(".qe-fund-input").forEach(inp => {
         inp.addEventListener("input", (e) => {
           applyLiveCommaFormat(e.target);
         });
       });
+      if (window.lucide) lucide.createIcons();
     }
 
     function renderMonthlyTable(computed) {
@@ -1335,6 +1363,7 @@
         thead.innerHTML = `<tr>
           <th class="px-3 py-3.5 font-semibold sticky-col-year whitespace-nowrap">שנה</th>
           <th class="px-3 py-3.5 font-semibold sticky-col-month whitespace-nowrap">חודש</th>
+          <th class="px-2.5 py-3.5 font-semibold text-center whitespace-nowrap" title="נעילת שורה למניעת שינוי בטעות">נעילה</th>
           ${state.funds.map(f => `<th class="px-3 py-3.5 font-semibold whitespace-nowrap">${escHtml(f.name)}</th>`).join("")}
           <th class="px-3 py-3.5 font-semibold bg-[#2b6cb0] whitespace-nowrap">סה"כ תיק</th>
           <th class="px-3 py-3.5 font-semibold bg-[#2b6cb0] whitespace-nowrap">רווח/הפסד מחודש קודם</th>
@@ -1389,19 +1418,34 @@
       let html = "";
       indexed.forEach(({ row, origIdx }) => {
         if (!row.values || typeof row.values !== "object") row.values = {};
-        html += `<tr class="hover:bg-slate-50">
+        const isLocked = Boolean(row.locked);
+        const lockBtnCls = isLocked
+          ? "bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100"
+          : "bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200 hover:text-slate-700";
+        const lockTitle = isLocked
+          ? "החודש נעול למניעת שינוי בטעות — לחץ לפתיחה לעריכה"
+          : "החודש פתוח לעריכה — לחץ לנעילה";
+        const lockIcon = isLocked ? "lock" : "unlock";
+
+        html += `<tr class="hover:bg-slate-50 ${isLocked ? "bg-slate-50/60" : ""}">
           <td class="px-3 py-2.5 font-semibold text-slate-700 bg-slate-50 sticky-col-year tabular-nums whitespace-nowrap">${row.year}</td>
-          <td class="px-3 py-2.5 font-semibold text-slate-700 bg-slate-50 sticky-col-month whitespace-nowrap">${escHtml(row.monthName)}</td>`;
+          <td class="px-3 py-2.5 font-semibold text-slate-700 bg-slate-50 sticky-col-month whitespace-nowrap">${escHtml(row.monthName)}</td>
+          <td class="px-2 py-2 text-center bg-slate-50 whitespace-nowrap">
+            <button type="button" data-toggle-lock="${origIdx}" title="${lockTitle}" aria-label="${lockTitle}"
+              class="row-lock-btn inline-flex items-center justify-center w-8 h-8 flat-pill border transition ${lockBtnCls}">
+              <i data-lucide="${lockIcon}" class="w-4 h-4"></i>
+            </button>
+          </td>`;
 
         state.funds.forEach(f => {
           const v = row.values[f.id];
           const displayVal = (typeof v === "number" && !Number.isNaN(v)) ? formatCommaInt(v) : "";
           html += `
-            <td class="px-2.5 py-2 bg-white">
+            <td class="px-2.5 py-2 ${isLocked ? "bg-slate-50/70" : "bg-white"}">
               <div class="relative w-40">
                 <input type="text" inputmode="numeric" dir="ltr" data-row="${origIdx}" data-fund="${escAttr(f.id)}"
-                  value="${displayVal}" placeholder="הזן סכום"
-                  class="monthly-input flat-input w-full pl-6 pr-3 py-1.5 text-right text-sm font-medium tabular-nums" />
+                  value="${displayVal}" placeholder="${isLocked ? "נעול" : "הזן סכום"}" ${isLocked ? "disabled" : ""}
+                  class="monthly-input flat-input w-full pl-6 pr-3 py-1.5 text-right text-sm font-medium tabular-nums ${isLocked ? "bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed opacity-85" : ""}" />
                 <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 pointer-events-none">₪</span>
               </div>
             </td>`;
@@ -1412,23 +1456,51 @@
           <td class="px-3 py-2.5 whitespace-nowrap tabular-nums ${diffClass(row.momDiff)}" data-cell="mom-${origIdx}">${formatNIS(row.momDiff, true)}</td>
           <td class="px-3 py-2.5 whitespace-nowrap tabular-nums ${diffClass(row.momPct)}" data-cell="pct-${origIdx}">${formatPct(row.momPct)}</td>
           <td class="px-3 py-2.5 whitespace-nowrap tabular-nums ${diffClass(row.cumDiff)}" data-cell="cum-${origIdx}">${formatNIS(row.cumDiff, true)}</td>
-          <td class="px-2.5 py-2 bg-white">
-            <input type="text" data-row="${origIdx}" data-note="1" value="${escAttr(row.note || "")}" placeholder="הערה..."
-              class="note-input flat-input w-40 px-3 py-1.5 text-xs" />
+          <td class="px-2.5 py-2 ${isLocked ? "bg-slate-50/70" : "bg-white"}">
+            <input type="text" data-row="${origIdx}" data-note="1" value="${escAttr(row.note || "")}" placeholder="${isLocked ? "" : "הערה..."}" ${isLocked ? "disabled" : ""}
+              class="note-input flat-input w-40 px-3 py-1.5 text-xs ${isLocked ? "bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed opacity-85" : ""}" />
           </td>
         </tr>`;
       });
       tbody.innerHTML = html;
+      if (window.lucide) lucide.createIcons();
 
       const scrollWrap = document.getElementById("monthlyTableScrollWrap");
       if (scrollWrap) {
         scrollWrap.scrollLeft = 0;
       }
 
+      tbody.querySelectorAll(".row-lock-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const beforeSnap = cloneSnapshot();
+          const rIdx = Number(e.currentTarget.dataset.toggleLock);
+          const targetRow = state.rows[rIdx];
+          if (!targetRow) return;
+          targetRow.locked = !targetRow.locked;
+          saveState();
+          recordAction(
+            `${targetRow.locked ? "נעילת" : "פתיחת"} חודש ${targetRow.monthName} ${targetRow.year}`,
+            beforeSnap,
+            { offerToastUndo: true }
+          );
+          renderMonthlyTable(computeMetrics());
+          if (targetRow.year === state.qeSelectedYear && targetRow.monthIndex === state.qeSelectedMonth) {
+            renderQuickEntryForm();
+          }
+          showToast(
+            targetRow.locked
+              ? `החודש ${targetRow.monthName} ${targetRow.year} ננעל למניעת שינוי בטעות`
+              : `החודש ${targetRow.monthName} ${targetRow.year} נפתח לעריכה`,
+            { showUndo: true }
+          );
+        });
+      });
+
       tbody.querySelectorAll(".monthly-input").forEach(inp => {
         inp.addEventListener("input", (e) => {
-          const beforeSnap = cloneSnapshot();
           const rIdx = Number(e.target.dataset.row);
+          if (state.rows[rIdx]?.locked) return;
+          const beforeSnap = cloneSnapshot();
           const fId = e.target.dataset.fund;
           const num = applyLiveCommaFormat(e.target);
           state.rows[rIdx].values[fId] = num;
@@ -1446,8 +1518,9 @@
 
       tbody.querySelectorAll(".note-input").forEach(inp => {
         inp.addEventListener("input", (e) => {
-          const beforeSnap = cloneSnapshot();
           const rIdx = Number(e.target.dataset.row);
+          if (state.rows[rIdx]?.locked) return;
+          const beforeSnap = cloneSnapshot();
           state.rows[rIdx].note = e.target.value;
           saveState();
           recordAction(`עדכון הערה (${state.rows[rIdx].monthName} ${state.rows[rIdx].year})`, beforeSnap, {
@@ -1836,7 +1909,8 @@
         monthIndex: nextM,
         monthName: HEBREW_MONTHS[nextM],
         values: emptyValues,
-        note: ""
+        note: "",
+        locked: false
       });
       state.hideEmptyFuture = false;
       saveState();
@@ -1856,6 +1930,11 @@
     });
 
     document.getElementById("btnQuickCopyPrev").addEventListener("click", () => {
+      const existingCheck = state.rows.find(r => r.year === state.qeSelectedYear && r.monthIndex === state.qeSelectedMonth);
+      if (existingCheck && existingCheck.locked) {
+        showToast("חודש זה נעול — פתח את המנעול כדי לערוך");
+        return;
+      }
       const targetKey = state.qeSelectedYear * 12 + state.qeSelectedMonth;
       const prevVals = {};
       state.rows.forEach(r => {
@@ -1879,27 +1958,34 @@
     });
 
     document.getElementById("btnQuickSave").addEventListener("click", () => {
-      const beforeSnap = cloneSnapshot();
       const y = state.qeSelectedYear;
       const m = state.qeSelectedMonth;
+      let existingRow = state.rows.find(r => r.year === y && r.monthIndex === m);
+      if (existingRow && existingRow.locked) {
+        showToast("חודש זה נעול — לחץ על המנעול כדי לפתוח לעריכה");
+        return;
+      }
+      const beforeSnap = cloneSnapshot();
       const newValues = {};
       state.funds.forEach(f => { newValues[f.id] = null; });
       document.querySelectorAll(".qe-fund-input").forEach(inp => {
         newValues[inp.dataset.qeFund] = parseCommaInt(inp.value);
       });
       const note = (document.getElementById("qeNote").value || "").trim();
+      const hasAnyValue = Object.values(newValues).some(v => typeof v === "number" && !Number.isNaN(v));
 
-      let existingRow = state.rows.find(r => r.year === y && r.monthIndex === m);
       if (existingRow) {
         existingRow.values = { ...existingRow.values, ...newValues };
         existingRow.note = note;
+        if (hasAnyValue) existingRow.locked = true;
       } else {
         state.rows.push({
           year: y,
           monthIndex: m,
           monthName: HEBREW_MONTHS[m],
           values: newValues,
-          note
+          note,
+          locked: hasAnyValue
         });
         state.rows.sort((a, b) => (a.year * 12 + a.monthIndex) - (b.year * 12 + b.monthIndex));
       }
@@ -1907,7 +1993,18 @@
       saveState();
       recordAction(`שמירת יתרות ${HEBREW_MONTHS[m]} ${y}`, beforeSnap, { offerToastUndo: true });
       renderAll();
-      showToast(`היתרות ל${HEBREW_MONTHS[m]} ${y} נשמרו בהצלחה!`, { showUndo: true });
+      showToast(`היתרות ל${HEBREW_MONTHS[m]} ${y} נשמרו וננעלו בהצלחה!`, { showUndo: true });
+    });
+
+    document.getElementById("btnQuickLockToggle").addEventListener("click", () => {
+      const targetRow = state.rows.find(r => r.year === state.qeSelectedYear && r.monthIndex === state.qeSelectedMonth);
+      if (!targetRow) return;
+      const beforeSnap = cloneSnapshot();
+      targetRow.locked = false;
+      saveState();
+      recordAction(`פתיחת חודש ${targetRow.monthName} ${targetRow.year}`, beforeSnap, { offerToastUndo: true });
+      renderAll();
+      showToast(`החודש ${targetRow.monthName} ${targetRow.year} נפתח לעריכה`, { showUndo: true });
     });
 
     document.getElementById("btnToggleSort").addEventListener("click", () => {
@@ -1991,7 +2088,7 @@
               state.funds.forEach(f => {
                 if (!(f.id in vals)) vals[f.id] = null;
               });
-              return { ...r, values: vals };
+              return normalizeRowObject({ ...r, values: vals });
             });
             saveState();
           }
@@ -2696,10 +2793,7 @@
               localStorage.setItem(FUNDS_STORAGE_KEY, JSON.stringify(state.funds));
             }
             if (Array.isArray(remote.rows) && remote.rows.length > 0) {
-              state.rows = remote.rows.map(r => ({
-                ...r,
-                values: (r && r.values && typeof r.values === "object") ? r.values : {}
-              }));
+              state.rows = remote.rows.map(normalizeRowObject);
               localStorage.setItem(STORAGE_KEY, JSON.stringify(state.rows));
             }
             if (remote.tracks && typeof remote.tracks === "object") {
@@ -2802,6 +2896,16 @@
         pullFromCloud(true);
       }
     }, 10000);
+
+    // Close modals on backdrop click or Escape key + Undo/Redo keyboard shortcuts
+    document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
+      backdrop.addEventListener("click", (e) => {
+        if (e.target === backdrop) backdrop.classList.add("hidden");
+      });
+    });
+    document.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && !e.altKey) {
+        const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
         const isTextInput = tag === "input" || tag === "textarea" || tag === "select";
         if (e.key.toLowerCase() === "z" && !e.shiftKey && !isTextInput) {
           e.preventDefault();
